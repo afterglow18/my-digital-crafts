@@ -5,31 +5,33 @@ import {
   useSaveOutfit,
   getListOutfitsQueryKey,
   ClothingItem,
-  ClothingItemCategory,
 } from "@workspace/api-client-react";
-import { Plus, BookmarkPlus, Check } from "lucide-react";
+import { Plus, BookmarkPlus, Check, PersonStanding } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { AddClothingSheet } from "@/components/clothing/AddClothingSheet";
 import { EditClothingSheet } from "@/components/clothing/EditClothingSheet";
+import { MannequinView } from "@/components/MannequinView";
 import { getImageUrl } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
 
-// The three outfit rows, in visual order (top → middle → bottom)
-const ROWS: { key: RowKey; label: string; addLabel: string }[] = [
-  { key: "tops", label: "Tops", addLabel: "+ Add Top" },
-  { key: "bottoms", label: "Bottoms", addLabel: "+ Add Bottom" },
-  { key: "shoes", label: "Shoes", addLabel: "+ Add Shoes" },
-];
-
 type RowKey = "tops" | "bottoms" | "shoes";
 
-// Card shown when a row is empty
+const ROWS: { key: RowKey; label: string; addLabel: string }[] = [
+  { key: "tops",    label: "Tops",    addLabel: "+ Add Top"    },
+  { key: "bottoms", label: "Bottoms", addLabel: "+ Add Bottom" },
+  { key: "shoes",   label: "Shoes",   addLabel: "+ Add Shoes"  },
+];
+
+// ── Sub-components ────────────────────────────────────────────────────────────
+
 function EmptyRowCard({ label, onClick }: { label: string; onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      data-testid={`empty-add-${label.toLowerCase().replace(/\s+/g, "-")}`}
-      className="flex-none w-24 h-[7.75rem] border-2 border-dashed border-black/40 rounded-xl flex flex-col items-center justify-center gap-1.5 bg-white/60 hover:border-black hover:bg-white transition-all active:scale-95"
+      data-testid={`empty-add-${label.replace(/\s+/g, "-").toLowerCase()}`}
+      className="flex-none w-24 h-[7.75rem] border-2 border-dashed border-black/40 rounded-xl
+                 flex flex-col items-center justify-center gap-1.5 bg-white/60
+                 hover:border-black hover:bg-white transition-all active:scale-95"
     >
       <div className="w-8 h-8 rounded-full border-2 border-black/40 flex items-center justify-center">
         <Plus className="w-4 h-4 text-black/50" />
@@ -41,7 +43,6 @@ function EmptyRowCard({ label, onClick }: { label: string; onClick: () => void }
   );
 }
 
-// A single clothing card within a row
 function RowCard({
   item,
   selected,
@@ -54,20 +55,16 @@ function RowCard({
   onEdit: () => void;
 }) {
   return (
-    <motion.div
-      className="flex-none w-24 relative"
-      whileTap={{ scale: 0.93 }}
-    >
+    <motion.div className="flex-none w-24 relative group" whileTap={{ scale: 0.93 }}>
       <button
         onClick={onSelect}
         data-testid={`clothing-item-${item.id}`}
-        className={`w-full flex flex-col border-2 rounded-xl overflow-hidden transition-all ${
+        className={`w-full flex flex-col border-2 rounded-xl overflow-hidden transition-all bg-white ${
           selected
             ? "border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] -translate-y-2"
             : "border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
-        } bg-white`}
+        }`}
       >
-        {/* Photo */}
         <div className="w-full h-24 bg-muted overflow-hidden relative">
           {item.imageObjectPath ? (
             <img
@@ -76,42 +73,32 @@ function RowCard({
               className="w-full h-full object-cover"
             />
           ) : (
-            <div
-              className={`w-full h-full flex items-center justify-center p-2 ${
-                selected ? "bg-primary" : "bg-secondary/30"
-              }`}
-            >
+            <div className={`w-full h-full flex items-center justify-center p-2 ${selected ? "bg-primary" : "bg-secondary/30"}`}>
               <span className="font-display font-bold text-center text-[9px] uppercase leading-tight">
                 {item.name}
               </span>
             </div>
           )}
-
-          {/* Selected check badge */}
           {selected && (
             <div className="absolute top-1.5 right-1.5 w-5 h-5 bg-black rounded-full flex items-center justify-center">
               <Check className="w-3 h-3 text-white" strokeWidth={3} />
             </div>
           )}
         </div>
-
-        {/* Name strip */}
-        <div
-          className={`px-1.5 py-1 border-t-2 border-black ${
-            selected ? "bg-primary" : "bg-white"
-          }`}
-        >
+        <div className={`px-1.5 py-1 border-t-2 border-black ${selected ? "bg-primary" : "bg-white"}`}>
           <span className="font-bold text-[10px] uppercase tracking-tight line-clamp-1 block">
             {item.name}
           </span>
         </div>
       </button>
 
-      {/* Long-press hint → edit; we expose edit via a small dot button */}
+      {/* Edit dot — visible on hover/focus */}
       <button
         onClick={onEdit}
         data-testid={`edit-item-${item.id}`}
-        className="absolute -top-1.5 -left-1.5 w-5 h-5 bg-white border-2 border-black rounded-full flex items-center justify-center shadow-sm opacity-0 group-hover:opacity-100 hover:opacity-100 focus:opacity-100 active:opacity-100 z-10"
+        className="absolute -top-1.5 -left-1.5 w-5 h-5 bg-white border-2 border-black rounded-full
+                   flex items-center justify-center shadow-sm
+                   opacity-0 group-hover:opacity-100 focus:opacity-100 active:opacity-100 z-10 transition-opacity"
         title="Edit"
       >
         <span className="text-[8px] font-black">✎</span>
@@ -120,33 +107,33 @@ function RowCard({
   );
 }
 
-export default function WardrobePage() {
-  const [addCategory, setAddCategory] = useState<RowKey | null>(null);
-  const [editingItemId, setEditingItemId] = useState<number | null>(null);
-  const [selected, setSelected] = useState<Partial<Record<RowKey, ClothingItem>>>({});
-  const [isSaveMode, setIsSaveMode] = useState(false);
-  const [saveName, setSaveName] = useState("");
+// ── Page ──────────────────────────────────────────────────────────────────────
 
-  // Fetch all three rows (parallel queries keyed per category)
-  const { data: tops = [] } = useListClothing(
-    { category: "tops" },
-    { query: { queryKey: getListClothingQueryKey({ category: "tops" }) } }
-  );
-  const { data: bottoms = [] } = useListClothing(
-    { category: "bottoms" },
-    { query: { queryKey: getListClothingQueryKey({ category: "bottoms" }) } }
-  );
-  const { data: shoes = [] } = useListClothing(
-    { category: "shoes" },
-    { query: { queryKey: getListClothingQueryKey({ category: "shoes" }) } }
-  );
+export default function WardrobePage() {
+  const [addCategory,     setAddCategory]     = useState<RowKey | null>(null);
+  const [editingItemId,   setEditingItemId]   = useState<number | null>(null);
+  const [selected,        setSelected]        = useState<Partial<Record<RowKey, ClothingItem>>>({});
+  const [isSaveMode,      setIsSaveMode]      = useState(false);
+  const [saveName,        setSaveName]        = useState("");
+  const [showMannequin,   setShowMannequin]   = useState(false);
+
+  // Fetch each row independently
+  const { data: tops    = [] } = useListClothing({ category: "tops"    }, { query: { queryKey: getListClothingQueryKey({ category: "tops"    }) } });
+  const { data: bottoms = [] } = useListClothing({ category: "bottoms" }, { query: { queryKey: getListClothingQueryKey({ category: "bottoms" }) } });
+  const { data: shoes   = [] } = useListClothing({ category: "shoes"   }, { query: { queryKey: getListClothingQueryKey({ category: "shoes"   }) } });
 
   const rowData: Record<RowKey, ClothingItem[]> = { tops, bottoms, shoes };
 
-  const saveOutfit = useSaveOutfit();
+  const saveOutfit  = useSaveOutfit();
   const queryClient = useQueryClient();
 
   const selectedCount = Object.values(selected).filter(Boolean).length;
+  const allSelected   = selectedCount === 3;
+
+  // Which categories are still missing
+  const missing = ROWS
+    .filter(({ key }) => !selected[key])
+    .map(({ label }) => label.toLowerCase());
 
   const toggleItem = (key: RowKey, item: ClothingItem) => {
     setSelected((prev) => {
@@ -181,6 +168,7 @@ export default function WardrobePage() {
 
   return (
     <div className="min-h-full flex flex-col pt-8 pb-8 bg-background relative">
+
       {/* Header */}
       <header className="px-4 mb-5">
         <h1 className="text-4xl font-display font-bold uppercase tracking-tighter mb-0.5">
@@ -191,15 +179,15 @@ export default function WardrobePage() {
         </p>
       </header>
 
-      {/* Three outfit rows */}
+      {/* ── Three outfit rows ── */}
       <div className="flex flex-col gap-6">
         {ROWS.map(({ key, label, addLabel }) => {
-          const items = rowData[key];
+          const items        = rowData[key];
           const selectedItem = selected[key];
 
           return (
             <section key={key} data-testid={`row-${key}`}>
-              {/* Row label + add shortcut */}
+              {/* Row label */}
               <div className="flex items-center justify-between px-4 mb-2.5">
                 <h2 className="font-display font-bold text-xs uppercase tracking-widest text-black/70">
                   {label}
@@ -216,13 +204,10 @@ export default function WardrobePage() {
                 )}
               </div>
 
-              {/* Scroll row */}
-              <div className="flex gap-3 overflow-x-auto -mx-0 px-4 pb-1 no-scrollbar">
+              {/* Horizontal scroll row */}
+              <div className="flex gap-3 overflow-x-auto px-4 pb-1 no-scrollbar">
                 {items.length === 0 ? (
-                  <EmptyRowCard
-                    label={addLabel}
-                    onClick={() => setAddCategory(key)}
-                  />
+                  <EmptyRowCard label={addLabel} onClick={() => setAddCategory(key)} />
                 ) : (
                   <>
                     {items.map((item) => (
@@ -234,10 +219,11 @@ export default function WardrobePage() {
                         onEdit={() => setEditingItemId(item.id)}
                       />
                     ))}
-                    {/* Inline add at end */}
+                    {/* Inline + at end of row */}
                     <button
                       onClick={() => setAddCategory(key)}
-                      className="flex-none w-14 h-[7.75rem] border-2 border-dashed border-black/20 rounded-xl flex items-center justify-center hover:border-black/40 transition-colors"
+                      className="flex-none w-14 h-[7.75rem] border-2 border-dashed border-black/20 rounded-xl
+                                 flex items-center justify-center hover:border-black/40 transition-colors"
                       data-testid={`add-inline-${key}`}
                     >
                       <Plus className="w-4 h-4 text-black/25" />
@@ -246,7 +232,7 @@ export default function WardrobePage() {
                 )}
               </div>
 
-              {/* Divider between rows */}
+              {/* Row divider */}
               {key !== "shoes" && (
                 <div className="mx-4 mt-5 border-t border-black/8" />
               )}
@@ -255,18 +241,20 @@ export default function WardrobePage() {
         })}
       </div>
 
-      {/* ── Save Outfit bar ── slides up when anything is selected */}
+      {/* ── Action bar ── slides up when ≥ 1 item selected ── */}
       <AnimatePresence>
         {selectedCount > 0 && (
           <motion.div
+            key="action-bar"
             initial={{ y: 100, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 100, opacity: 0 }}
+            animate={{ y: 0,   opacity: 1 }}
+            exit={{   y: 100, opacity: 0 }}
             transition={{ type: "spring", damping: 22, stiffness: 220 }}
             className="fixed bottom-[76px] left-1/2 -translate-x-1/2 w-full max-w-md px-4 z-30"
           >
             <div className="bg-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-2xl p-3 flex flex-col gap-2.5">
-              {/* Preview strip */}
+
+              {/* Mini outfit preview + count */}
               <div className="flex items-center gap-3">
                 <div className="flex gap-1.5">
                   {ROWS.map(({ key, label }) => {
@@ -274,7 +262,7 @@ export default function WardrobePage() {
                     return (
                       <div key={key} className="flex flex-col items-center gap-0.5">
                         <div
-                          className={`w-11 h-13 border-2 rounded overflow-hidden ${
+                          className={`w-11 border-2 rounded overflow-hidden ${
                             item ? "border-black" : "border-dashed border-black/20"
                           }`}
                           style={{ height: "3.25rem" }}
@@ -308,12 +296,18 @@ export default function WardrobePage() {
                 </div>
 
                 <div className="flex-1 flex flex-col items-end gap-0.5">
-                  <span className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
-                    {selectedCount} of 3 picked
-                  </span>
+                  {allSelected ? (
+                    <span className="text-[10px] font-bold uppercase tracking-wide text-black">
+                      Look complete!
+                    </span>
+                  ) : (
+                    <span className="text-[10px] font-medium text-muted-foreground leading-snug text-right">
+                      Still need: {missing.join(" & ")}
+                    </span>
+                  )}
                   <button
                     onClick={clearSelection}
-                    className="text-[10px] font-bold uppercase text-black/40 hover:text-black transition-colors"
+                    className="text-[10px] font-bold uppercase text-black/35 hover:text-black transition-colors"
                     data-testid="button-clear-selection"
                   >
                     Clear
@@ -321,8 +315,9 @@ export default function WardrobePage() {
                 </div>
               </div>
 
-              {/* Name + save */}
+              {/* ── Actions ── */}
               {isSaveMode ? (
+                /* Name input */
                 <div className="flex gap-2">
                   <input
                     autoFocus
@@ -331,7 +326,8 @@ export default function WardrobePage() {
                     value={saveName}
                     onChange={(e) => setSaveName(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleSave()}
-                    className="flex-1 border-2 border-black rounded-lg px-3 py-2 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary placeholder:font-normal"
+                    className="flex-1 border-2 border-black rounded-lg px-3 py-2 text-sm font-bold
+                               focus:outline-none focus:ring-2 focus:ring-primary placeholder:font-normal"
                     data-testid="input-outfit-name"
                   />
                   <button
@@ -343,18 +339,56 @@ export default function WardrobePage() {
                     {saveOutfit.isPending ? "…" : "Save"}
                   </button>
                 </div>
+              ) : allSelected ? (
+                /* Two action buttons — only shown when all 3 selected */
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => setIsSaveMode(true)}
+                    className="btn-brutalist py-2.5 rounded-xl flex items-center justify-center gap-1.5 text-sm"
+                    data-testid="button-save-outfit"
+                  >
+                    <BookmarkPlus className="w-4 h-4" />
+                    Save Outfit
+                  </button>
+                  <button
+                    onClick={() => setShowMannequin(true)}
+                    className="py-2.5 rounded-xl flex items-center justify-center gap-1.5 text-sm
+                               font-bold uppercase tracking-wide border-2 border-black bg-white
+                               shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]
+                               hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]
+                               active:translate-y-0.5 active:translate-x-0.5 active:shadow-none transition-all"
+                    data-testid="button-view-mannequin"
+                  >
+                    <PersonStanding className="w-4 h-4" />
+                    Mannequin
+                  </button>
+                </div>
               ) : (
+                /* Partial selection — greyed save button */
                 <button
-                  onClick={() => setIsSaveMode(true)}
-                  className="btn-brutalist w-full py-2.5 rounded-xl flex items-center justify-center gap-2 text-sm"
-                  data-testid="button-save-to-favorites"
+                  disabled
+                  className="w-full py-2.5 rounded-xl flex items-center justify-center gap-2 text-sm
+                             font-bold uppercase tracking-wide border-2 border-black/20 bg-white/50
+                             text-black/30 cursor-not-allowed"
                 >
                   <BookmarkPlus className="w-4 h-4" />
-                  Save Outfit
+                  Select all 3 to save
                 </button>
               )}
             </div>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── Mannequin overlay ── */}
+      <AnimatePresence>
+        {showMannequin && (
+          <MannequinView
+            top={selected.tops}
+            bottom={selected.bottoms}
+            shoes={selected.shoes}
+            onClose={() => setShowMannequin(false)}
+          />
         )}
       </AnimatePresence>
 
