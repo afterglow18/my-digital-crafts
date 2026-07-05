@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   useListOutfits,
   useDeleteOutfit,
@@ -6,9 +6,12 @@ import {
   ClothingItem,
 } from "@workspace/api-client-react";
 import { Trash2, Bookmark } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { getImageUrl } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
+import { useEntitlements } from "@/hooks/useEntitlements";
+import { UpgradeSheet } from "@/components/paywall/UpgradeSheet";
+import { FREE_OUTFIT_LIMIT } from "@/lib/entitlements";
 
 const SLOT_ORDER = ["tops", "bottoms", "shoes", "dresses", "outerwear", "accessories"] as const;
 type SlotKey = (typeof SLOT_ORDER)[number];
@@ -54,6 +57,12 @@ export default function SavedPage() {
   const { data: outfits, isLoading } = useListOutfits();
   const deleteOutfit = useDeleteOutfit();
   const queryClient = useQueryClient();
+  const { tier } = useEntitlements();
+  const [showUpgrade, setShowUpgrade] = useState(false);
+
+  const isFree = tier === "free";
+  const outfitCount = outfits?.length ?? 0;
+  const atLimit = isFree && outfitCount >= FREE_OUTFIT_LIMIT;
 
   const handleDelete = (id: number) => {
     deleteOutfit.mutate(
@@ -70,8 +79,54 @@ export default function SavedPage() {
     <div className="min-h-full flex flex-col pt-8 px-4 pb-8 bg-secondary/10 relative">
       <header className="mb-6">
         <h1 className="text-4xl font-display font-bold uppercase tracking-tighter mb-1">Lookbook</h1>
-        <p className="font-medium text-muted-foreground text-sm">Hall of fame.</p>
+        <div className="flex items-center justify-between">
+          <p className="font-medium text-muted-foreground text-sm">Hall of fame.</p>
+
+          {/* Free tier outfit usage badge */}
+          {isFree && outfitCount > 0 && (
+            <button
+              onClick={() => setShowUpgrade(true)}
+              className={`text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full
+                          border-2 transition-colors
+                          ${atLimit
+                            ? "bg-black text-white border-black"
+                            : outfitCount >= FREE_OUTFIT_LIMIT - 1
+                            ? "bg-primary border-black text-black"
+                            : "bg-white border-black/20 text-black/40 hover:border-black/40"
+                          }`}
+            >
+              {outfitCount}/{FREE_OUTFIT_LIMIT} saved
+            </button>
+          )}
+        </div>
       </header>
+
+      {/* Upgrade nudge when at outfit limit */}
+      {atLimit && !isLoading && (
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-5 border-2 border-black rounded-xl bg-primary p-4
+                     shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+        >
+          <p className="font-display font-bold text-sm uppercase tracking-tight">
+            🔓 Lookbook is full
+          </p>
+          <p className="text-xs text-black/60 mt-1 mb-3 leading-snug">
+            You've saved {FREE_OUTFIT_LIMIT} outfits — the free limit.
+            Unlock Forever to save unlimited looks.
+          </p>
+          <button
+            onClick={() => setShowUpgrade(true)}
+            className="w-full py-2.5 rounded-lg border-2 border-black bg-black text-white
+                       font-bold uppercase text-xs tracking-wide
+                       shadow-[2px_2px_0px_0px_rgba(0,0,0,0.3)]
+                       active:translate-y-0.5 active:translate-x-0.5 active:shadow-none transition-all"
+          >
+            Unlock Forever – $4.99
+          </button>
+        </motion.div>
+      )}
 
       {isLoading ? (
         <div className="flex flex-col gap-4">
@@ -97,7 +152,6 @@ export default function SavedPage() {
             const bottomItem = byCategory["bottoms"];
             const shoesItem = byCategory["shoes"];
             const outerwearItem = byCategory["outerwear"];
-            const accessoryItem = byCategory["accessories"];
 
             // Secondary slots (any items not shown in the primary layout)
             const primaryShown = new Set([
@@ -239,6 +293,13 @@ export default function SavedPage() {
           </p>
         </div>
       )}
+
+      {/* Upgrade sheet */}
+      <AnimatePresence>
+        {showUpgrade && (
+          <UpgradeSheet reason="outfits" onClose={() => setShowUpgrade(false)} />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

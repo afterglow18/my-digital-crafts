@@ -3,6 +3,7 @@ import {
   useListClothing,
   getListClothingQueryKey,
   useSaveOutfit,
+  useListOutfits,
   getListOutfitsQueryKey,
   ClothingItem,
 } from "@workspace/api-client-react";
@@ -12,8 +13,12 @@ import { SwipeRow, SwipeRowHandle } from "@/components/SwipeRow";
 import { QuickAddSheet } from "@/components/clothing/QuickAddSheet";
 import { ItemDetailsSheet } from "@/components/clothing/ItemDetailsSheet";
 import { MannequinView } from "@/components/MannequinView";
+import { UpgradeSheet, UpgradeReason } from "@/components/paywall/UpgradeSheet";
+import { PremiumSheet } from "@/components/paywall/PremiumSheet";
 import { getImageUrl } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
+import { useEntitlements } from "@/hooks/useEntitlements";
+import { FREE_ITEM_LIMIT, FREE_OUTFIT_LIMIT } from "@/lib/entitlements";
 
 type RowKey = "tops" | "bottoms" | "shoes";
 type Category = "tops" | "bottoms" | "shoes" | "accessories" | "outerwear" | "dresses";
@@ -43,6 +48,10 @@ export default function WardrobePage() {
   // Mannequin overlay
   const [showMannequin, setShowMannequin] = useState(false);
 
+  // Paywall overlays
+  const [upgradeReason, setUpgradeReason] = useState<UpgradeReason | null>(null);
+  const [showPremium, setShowPremium] = useState(false);
+
   // Save flow
   const [isSaveOpen, setIsSaveOpen] = useState(false);
   const [saveName,   setSaveName]   = useState("");
@@ -51,11 +60,16 @@ export default function WardrobePage() {
   const { data: tops    = [] } = useListClothing({ category: "tops"    }, { query: { queryKey: getListClothingQueryKey({ category: "tops"    }) } });
   const { data: bottoms = [] } = useListClothing({ category: "bottoms" }, { query: { queryKey: getListClothingQueryKey({ category: "bottoms" }) } });
   const { data: shoes   = [] } = useListClothing({ category: "shoes"   }, { query: { queryKey: getListClothingQueryKey({ category: "shoes"   }) } });
+  const { data: outfits = [] } = useListOutfits();
 
   const rowData: Record<RowKey, ClothingItem[]> = { tops, bottoms, shoes };
 
+  // Total items across all three rows (the only categories users can add to)
+  const totalItems = tops.length + bottoms.length + shoes.length;
+
   const saveOutfit  = useSaveOutfit();
   const queryClient = useQueryClient();
+  const { tier, caps, canAddItem, canSaveOutfit } = useEntitlements();
 
   // ── Callbacks ─────────────────────────────────────────────────────────────
   const handleCentred = useCallback(
@@ -67,6 +81,33 @@ export default function WardrobePage() {
   const handleItemTap = useCallback((item: ClothingItem) => {
     setDetailsItem(item);
   }, []);
+
+  // Gate: open QuickAddSheet only if within item limit, otherwise show paywall
+  const handleAddClick = useCallback((category: Category) => {
+    if (canAddItem(totalItems)) {
+      setAddCategory(category);
+    } else {
+      setUpgradeReason("items");
+    }
+  }, [canAddItem, totalItems]);
+
+  // Gate: open save panel only if within outfit limit, otherwise show paywall
+  const handleSaveClick = useCallback(() => {
+    if (canSaveOutfit(outfits.length)) {
+      setIsSaveOpen(true);
+    } else {
+      setUpgradeReason("outfits");
+    }
+  }, [canSaveOutfit, outfits.length]);
+
+  // Gate: open mannequin only with premium entitlement
+  const handleMannequinClick = useCallback(() => {
+    if (caps.mannequin) {
+      setShowMannequin(true);
+    } else {
+      setShowPremium(true);
+    }
+  }, [caps.mannequin]);
 
   // ── Shuffle ───────────────────────────────────────────────────────────────
   const handleShuffle = useCallback(() => {
@@ -86,6 +127,14 @@ export default function WardrobePage() {
   // ── Save outfit ───────────────────────────────────────────────────────────
   const handleSave = () => {
     if (!saveName.trim()) return;
+    // Defensive re-check in case the query result became stale between
+    // opening the save panel and confirming — guards against concurrent adds.
+    if (!canSaveOutfit(outfits.length)) {
+      setIsSaveOpen(false);
+      setSaveName("");
+      setUpgradeReason("outfits");
+      return;
+    }
     const itemIds = (Object.values(centred) as ClothingItem[]).map((i) => i.id);
     saveOutfit.mutate(
       { data: { name: saveName.trim(), itemIds } },
@@ -101,6 +150,11 @@ export default function WardrobePage() {
 
   const canSave = ROWS.every(({ key }) => !!centred[key]);
 
+  // ── Free tier usage indicator ─────────────────────────────────────────────
+  const isFree = tier === "free";
+  const itemsLeft = isFree ? Math.max(0, FREE_ITEM_LIMIT - totalItems) : null;
+  const outfitsLeft = isFree ? Math.max(0, FREE_OUTFIT_LIMIT - outfits.length) : null;
+
   // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div className="min-h-full flex flex-col pt-6 pb-8 bg-background">
@@ -113,9 +167,27 @@ export default function WardrobePage() {
         <h1 className="text-[2.5rem] font-display font-bold uppercase tracking-tighter leading-none -mt-1">
           Closet
         </h1>
-        <p className="text-muted-foreground font-medium text-sm mt-1">
-          Swipe each row · tap centred item for details.
-        </p>
+        <div className="flex items-center justify-between mt-1">
+          <p className="text-muted-foreground font-medium text-sm">
+            Swipe each row · tap centred item for details.
+          </p>
+          {/* Free tier limit badge */}
+          {isFree && totalItems > 0 && (
+            <button
+              onClick={() => setUpgradeReason("items")}
+              className={`text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full
+                          border-2 transition-colors
+                          ${itemsLeft === 0
+                            ? "bg-black text-white border-black"
+                            : itemsLeft! <= 5
+                            ? "bg-primary border-black text-black"
+                            : "bg-white border-black/20 text-black/40 hover:border-black/40"
+                          }`}
+            >
+              {totalItems}/{FREE_ITEM_LIMIT} items
+            </button>
+          )}
+        </div>
       </header>
 
       {/* ── Three slot-machine rows ── */}
@@ -133,7 +205,7 @@ export default function WardrobePage() {
                 </span>
                 {items.length > 0 && (
                   <button
-                    onClick={() => setAddCategory(key as Category)}
+                    onClick={() => handleAddClick(key as Category)}
                     className="text-[10px] font-bold uppercase tracking-wide text-black/30 hover:text-black transition-colors"
                   >
                     + Add
@@ -146,7 +218,7 @@ export default function WardrobePage() {
                 items={items}
                 addLabel={addLabel}
                 onCenteredItem={handleCentred(key)}
-                onAddClick={() => setAddCategory(key as Category)}
+                onAddClick={() => handleAddClick(key as Category)}
                 onItemTap={handleItemTap}
               />
 
@@ -251,7 +323,7 @@ export default function WardrobePage() {
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 6 }}
-              onClick={() => setIsSaveOpen(true)}
+              onClick={canSave ? handleSaveClick : undefined}
               disabled={!canSave}
               className="btn-brutalist w-full py-3.5 rounded-xl flex items-center justify-center gap-2 text-sm
                          disabled:opacity-35 disabled:cursor-not-allowed disabled:shadow-none
@@ -259,7 +331,18 @@ export default function WardrobePage() {
               data-testid="button-save-outfit"
             >
               <BookmarkPlus className="w-4 h-4" />
-              {canSave ? "Save Outfit" : "Add items to all rows to save"}
+              {canSave ? (
+                <>
+                  Save Outfit
+                  {isFree && outfitsLeft !== null && (
+                    <span className="ml-1 text-xs font-bold text-black/50">
+                      ({outfitsLeft} left)
+                    </span>
+                  )}
+                </>
+              ) : (
+                "Add items to all rows to save"
+              )}
             </motion.button>
           )}
         </AnimatePresence>
@@ -279,7 +362,7 @@ export default function WardrobePage() {
           </button>
 
           <button
-            onClick={() => setShowMannequin(true)}
+            onClick={handleMannequinClick}
             disabled={!canSave}
             className="py-3 rounded-xl flex items-center justify-center gap-1.5 text-sm
                        font-bold uppercase tracking-wide border-2 border-black bg-white
@@ -292,6 +375,9 @@ export default function WardrobePage() {
           >
             <PersonStanding className="w-4 h-4" />
             Mannequin
+            {!caps.mannequin && canSave && (
+              <span className="text-[9px] font-bold text-black/40 ml-0.5">✦</span>
+            )}
           </button>
         </div>
       </div>
@@ -305,6 +391,21 @@ export default function WardrobePage() {
             shoes={centred.shoes}
             onClose={() => setShowMannequin(false)}
           />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {upgradeReason && (
+          <UpgradeSheet
+            reason={upgradeReason}
+            onClose={() => setUpgradeReason(null)}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showPremium && (
+          <PremiumSheet onClose={() => setShowPremium(false)} />
         )}
       </AnimatePresence>
 

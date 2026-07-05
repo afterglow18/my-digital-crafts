@@ -1,0 +1,1 @@
+- [Entitlements architecture](entitlements-architecture.md) — tier/limit system + payment provider seam; only runCheckout needs changing when a provider is chosen.
