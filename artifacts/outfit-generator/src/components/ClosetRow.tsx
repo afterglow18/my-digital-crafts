@@ -191,21 +191,23 @@ export const ClosetRow = forwardRef<ClosetRowHandle, ClosetRowProps>(
     const baseX  = (1 - centredIdx) * slotW;
     const stripX = baseX + dragX;
 
-    const containerCX = (slotW * 3) / 2;
-
-    const getItemStyle = (i: number) => {
-      const itemCX = i * slotW + slotW / 2 + stripX;
-      const dist   = Math.abs(itemCX - containerCX) / slotW; // 0 = center, 1 = side
-      const scale   = Math.max(0.70, 1.0 - dist * 0.18);
-      const opacity = dist > 1.65 ? 0 : Math.max(0.62, 1.0 - dist * 0.38);
-      return { scale, opacity };
+    // Items beyond ±1.65 slots from center are invisible; all others same size/opacity.
+    const isVisible = (i: number) => {
+      const itemCX    = i * slotW + slotW / 2 + stripX;
+      const containerCX = (slotW * 3) / 2;
+      return Math.abs(itemCX - containerCX) / slotW <= 1.65;
     };
 
     const lo    = Math.max(0, centredIdx - 2);
     const hi    = Math.min(items.length - 1, centredIdx + 2);
-    const cardW = slotW > 0 ? Math.round(slotW * 0.80) : 0;
+    // Card fills ~88% of each slot so it lines up with the image placeholder boxes
+    const cardW = slotW > 0 ? Math.round(slotW * 0.88) : 0;
     const cardH = Math.max(0, containerH - hangerH);
     const padX  = (slotW - cardW) / 2;
+
+    // Blush-pink selection indicator colours
+    const PINK_BORDER = "rgba(225, 110, 155, 0.88)";
+    const PINK_GLOW   = "0 0 0 2px rgba(225,110,155,0.22), 0 4px 18px rgba(225,110,155,0.28)";
 
     // Don't render until we've measured the container
     if (!slotW || !containerH) {
@@ -244,13 +246,11 @@ export const ClosetRow = forwardRef<ClosetRowHandle, ClosetRowProps>(
           }}
         >
           {items.slice(lo, hi + 1).map((item, localIdx) => {
-            const i                  = lo + localIdx;
-            const { scale, opacity } = getItemStyle(i);
-            if (opacity < 0.01) return null;
+            const i        = lo + localIdx;
+            if (!isVisible(i)) return null;
             const isCenter = i === centredIdx;
 
             return (
-              /* Accessible button — keyboard + screen-reader friendly */
               <button
                 key={item.id}
                 onClick={() => onItemActivate(item, i)}
@@ -259,6 +259,7 @@ export const ClosetRow = forwardRef<ClosetRowHandle, ClosetRowProps>(
                   : `${item.name ?? "Item"} — tap to select`}
                 aria-pressed={isCenter}
                 style={{
+                  // All items identical size — no scale transform
                   position: "absolute",
                   top: 0,
                   left: i * slotW + padX,
@@ -267,13 +268,6 @@ export const ClosetRow = forwardRef<ClosetRowHandle, ClosetRowProps>(
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
-                  transform: `scale(${scale.toFixed(3)})`,
-                  transformOrigin: "top center",
-                  opacity: opacity.toFixed(3),
-                  transition: transitioning
-                    ? "transform 0.28s cubic-bezier(0.25,0.46,0.45,0.94), opacity 0.28s ease"
-                    : "none",
-                  willChange: "transform, opacity",
                   cursor: isCenter ? "pointer" : "ew-resize",
                   background: "transparent",
                   border: "none",
@@ -281,7 +275,7 @@ export const ClosetRow = forwardRef<ClosetRowHandle, ClosetRowProps>(
                   WebkitTapHighlightColor: "transparent",
                 }}
               >
-                {/* Hanger */}
+                {/* Hanger — gold for selected, dimmed for others */}
                 <div
                   style={{
                     flexShrink: 0,
@@ -300,7 +294,9 @@ export const ClosetRow = forwardRef<ClosetRowHandle, ClosetRowProps>(
                   />
                 </div>
 
-                {/* Photo card */}
+                {/* Photo card — blush-pink border + glow on selected item.
+                    border and box-shadow always transition so the highlight
+                    glides smoothly to the newly selected card on every swipe. */}
                 <div
                   style={{
                     flex: 1,
@@ -308,12 +304,17 @@ export const ClosetRow = forwardRef<ClosetRowHandle, ClosetRowProps>(
                     overflow: "hidden",
                     borderRadius: "0 0 10px 10px",
                     background: "rgba(255, 251, 244, 0.97)",
-                    boxShadow: isCenter
-                      ? "0 5px 22px rgba(0,0,0,0.16), 0 2px 6px rgba(0,0,0,0.09)"
-                      : "0 2px 8px rgba(0,0,0,0.06)",
+                    // 4–5 px blush-pink border on selected; near-invisible on others
                     border: isCenter
-                      ? "1.5px solid rgba(196,155,42,0.35)"
-                      : "1px solid rgba(196,155,42,0.14)",
+                      ? `4.5px solid ${PINK_BORDER}`
+                      : "1.5px solid rgba(196,155,42,0.14)",
+                    borderTop: "none",     // hanger covers the top edge
+                    // Soft outer glow on selected
+                    boxShadow: isCenter
+                      ? PINK_GLOW
+                      : "0 2px 8px rgba(0,0,0,0.06)",
+                    // Always-on transition — border/shadow move to the new card instantly
+                    transition: "border-color 0.24s ease, border-width 0.24s ease, box-shadow 0.24s ease",
                     position: "relative",
                     pointerEvents: "none",
                   }}
