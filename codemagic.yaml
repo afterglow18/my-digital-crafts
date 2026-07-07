@@ -1,0 +1,110 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Codemagic CI/CD — My Digital Closet iOS build
+# Docs: https://docs.codemagic.io/yaml-quick-start/building-a-capacitor-app/
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# REQUIRED secrets — add all of these in Codemagic → Team → Global variables
+# & secrets, grouped under the variable group names shown below.
+#
+# Group: app_store_credentials
+#   APP_STORE_CONNECT_KEY_ID        Key ID from App Store Connect → Users & Access → Keys
+#   APP_STORE_CONNECT_ISSUER_ID     Issuer ID from the same page
+#   APP_STORE_CONNECT_PRIVATE_KEY   Full contents of the .p8 file
+#
+# Group: build_env
+#   VITE_API_BASE_URL               Your deployed API URL, e.g.
+#                                   https://my-digital-closet.replit.app/api-server
+#   BUNDLE_ID                       com.mydigitalcloset.app
+
+workflows:
+  ios-app-store:
+    name: iOS App Store Release
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+
+    integrations:
+      app_store_connect: codemagic_api_key   # name of the key you add in Codemagic → Integrations
+
+    environment:
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.mydigitalcloset.app
+      xcode: latest
+      node: 20
+      groups:
+        - app_store_credentials
+        - build_env
+      vars:
+        XCODE_WORKSPACE: ios/App/App.xcworkspace
+        XCODE_SCHEME: App
+
+    scripts:
+      # 1 — Install pnpm + all workspace dependencies
+      - name: Install pnpm and dependencies
+        script: |
+          npm install -g pnpm
+          pnpm install --frozen-lockfile
+
+      # 2 — Build the Vite web bundle for Capacitor (base="/", no PORT needed)
+      - name: Build web assets
+        script: |
+          cd artifacts/outfit-generator
+          pnpm vite build --config vite.capacitor.config.ts
+        environment:
+          VITE_API_BASE_URL: $VITE_API_BASE_URL
+
+      # 3 — Add the iOS platform if it does not already exist, then sync
+      - name: Capacitor add iOS and sync
+        script: |
+          cd artifacts/outfit-generator
+          if [ ! -d "ios" ]; then
+            npx cap add ios
+          fi
+          npx cap sync ios
+
+      # 4 — Install CocoaPods dependencies
+      - name: Pod install
+        script: |
+          cd artifacts/outfit-generator/ios/App
+          pod install
+
+      # 5 — Set build number from Codemagic's incremental counter
+      - name: Set build number
+        script: |
+          cd artifacts/outfit-generator/ios/App
+          agvtool new-version -all $BUILD_NUMBER
+
+      # 6 — Build & archive using Codemagic-managed code signing
+      #     (certificate + provisioning profile are injected automatically
+      #      by the ios_signing block above — no manual xcodebuild signing flags needed)
+      - name: Xcode archive
+        script: |
+          xcodebuild \
+            -workspace artifacts/outfit-generator/$XCODE_WORKSPACE \
+            -scheme $XCODE_SCHEME \
+            -configuration Release \
+            -archivePath $CM_BUILD_DIR/build/App.xcarchive \
+            -destination "generic/platform=iOS" \
+            archive \
+            CODE_SIGN_STYLE=Manual \
+            | xcpretty
+
+      # 7 — Export the signed .ipa
+      - name: Export IPA
+        script: |
+          xcodebuild \
+            -exportArchive \
+            -archivePath $CM_BUILD_DIR/build/App.xcarchive \
+            -exportOptionsPlist app-store/ExportOptions.plist \
+            -exportPath $CM_BUILD_DIR/build/ipa \
+            | xcpretty
+
+    artifacts:
+      - $CM_BUILD_DIR/build/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+
+    publishing:
+      app_store_connect:
+        auth: integration              # uses the integrations.app_store_connect key above
+        submit_to_testflight: true
+        submit_to_app_store: false     # flip to true when ready for full review
