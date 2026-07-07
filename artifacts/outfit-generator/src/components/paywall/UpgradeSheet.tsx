@@ -66,45 +66,45 @@ export function UpgradeSheet({ reason, onClose }: Props) {
       </div>
 
       {/* Body */}
-      <div className="flex-1 overflow-y-auto flex flex-col px-5 pb-4 gap-5">
+      <div className="flex-1 flex flex-col px-5 pb-4 gap-4 min-h-0">
 
         {/* Headline */}
-        <div className="flex flex-col gap-1 pt-1">
+        <div className="flex flex-col gap-0.5">
           <h1 className="font-display font-bold text-4xl uppercase tracking-tight leading-none">
             Unlock<br />Unlimited<br />Forever
           </h1>
-          <p className="text-base font-bold text-black/55 mt-2">
+          <p className="text-sm font-bold text-black/55 mt-2">
             Your free closet is full!
           </p>
         </div>
 
-        {/* Black card */}
+        {/* Black card — flex-1 so it fills remaining space */}
         <div
-          className="rounded-3xl overflow-hidden border-4 border-black"
+          className="rounded-3xl overflow-hidden border-4 border-black flex flex-col flex-1 min-h-0"
           style={{ background: "#0a0a0a", boxShadow: "6px 6px 0px 0px rgba(0,0,0,0.35)" }}
         >
           {/* "Upgrade once to unlock:" header */}
-          <div className="px-6 pt-6 pb-4 border-b border-white/10">
-            <p className="font-display font-bold text-lg uppercase tracking-tight text-white">
+          <div className="px-5 pt-5 pb-3 border-b border-white/10 flex-shrink-0">
+            <p className="font-display font-bold text-base uppercase tracking-tight text-white">
               Upgrade once to unlock:
             </p>
           </div>
 
-          {/* Feature list */}
-          <ul className="px-6 py-5 flex flex-col gap-4">
+          {/* Feature list — fills space evenly */}
+          <ul className="px-5 py-0 flex flex-col flex-1 justify-evenly">
             {FEATURES.map(({ emoji, text }) => (
-              <li key={text} className="flex items-center gap-4">
-                <span className="text-2xl leading-none w-8 flex-shrink-0 text-center">{emoji}</span>
-                <span className="text-white font-semibold text-base leading-snug">{text}</span>
+              <li key={text} className="flex items-center gap-4 py-1">
+                <span className="text-xl leading-none w-7 flex-shrink-0 text-center">{emoji}</span>
+                <span className="text-white font-semibold text-sm leading-snug">{text}</span>
               </li>
             ))}
           </ul>
 
           {/* Price */}
-          <div className="px-6 pb-6 pt-1">
+          <div className="px-5 pb-5 pt-2 border-t border-white/10 flex-shrink-0">
             <div className="flex items-baseline gap-2">
               <span
-                className="font-display font-bold text-6xl leading-none"
+                className="font-display font-bold text-5xl leading-none"
                 style={{ color: "#F0C030" }}
               >
                 $4.99
