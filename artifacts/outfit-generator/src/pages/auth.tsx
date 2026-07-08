@@ -95,7 +95,7 @@ export default function AuthPage({ onAuthenticated }: { onAuthenticated: () => v
         {/* Background wardrobe image */}
         {ir && (
           <img
-            src="/closet-bg.png"
+            src="/auth-bg.jpg"
             alt=""
             draggable={false}
             style={{
