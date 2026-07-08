@@ -248,49 +248,71 @@ export default function SavedPage() {
                     </div>
                   </div>
 
-                  {/* Accessories / extras row + Add Accessory button */}
-                  <div className="flex gap-2 overflow-x-auto no-scrollbar pt-1 border-t border-black/10">
-                    {extras.map((item) => (
-                      <div key={item.id} className="flex-none flex flex-col items-center gap-0.5">
-                        <div
-                          className="w-14 h-16 border-2 border-black overflow-hidden"
-                          style={{ background: "#FDECEF" }}
-                        >
-                          {item.imageObjectPath ? (
-                            <img
-                              src={getImageUrl(item.imageObjectPath)!}
-                              alt={item.name}
-                              className="w-full h-full"
-                              style={{ objectFit: "contain", objectPosition: "center" }}
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center p-1">
-                              <span className="text-[8px] font-bold uppercase text-center leading-tight text-black/30">—</span>
+                  {/* Accessories — 5-slot grid, filled items + empty "+" slots */}
+                  {(() => {
+                    const MAX_SLOTS = 5;
+                    const allAccItems = extras.filter((i) => i.category === "accessories");
+                    const accItems = allAccItems.slice(0, MAX_SLOTS);
+                    const otherExtras = extras.filter((i) => i.category !== "accessories");
+                    const emptySlots = Math.max(0, MAX_SLOTS - accItems.length);
+                    return (
+                      <div className="pt-1 border-t border-black/10">
+                        {/* Non-accessory extras (outerwear etc.) if any */}
+                        {otherExtras.length > 0 && (
+                          <div className="flex gap-2 overflow-x-auto no-scrollbar mb-2">
+                            {otherExtras.map((item) => (
+                              <div key={item.id} className="flex-none flex flex-col items-center gap-0.5">
+                                <div className="w-14 h-14 border-2 border-black overflow-hidden" style={{ background: "#FDECEF" }}>
+                                  {item.imageObjectPath ? (
+                                    <img src={getImageUrl(item.imageObjectPath)!} alt={item.name} className="w-full h-full object-contain" />
+                                  ) : (
+                                    <div className="w-full h-full flex items-center justify-center">
+                                      <span className="text-[8px] font-bold uppercase text-black/30">—</span>
+                                    </div>
+                                  )}
+                                </div>
+                                <span className="text-[8px] font-bold uppercase text-muted-foreground">
+                                  {SLOT_LABELS[item.category as SlotKey] ?? item.category}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        {/* 5-slot accessory row */}
+                        <div className="grid grid-cols-5 gap-1.5">
+                          {accItems.map((item) => (
+                            <div key={item.id} className="flex flex-col items-center gap-0.5">
+                              <div className="w-full aspect-square border-2 border-black overflow-hidden" style={{ background: "#FDECEF" }}>
+                                {item.imageObjectPath ? (
+                                  <img src={getImageUrl(item.imageObjectPath)!} alt={item.name} className="w-full h-full object-contain" />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center">
+                                    <span className="text-[8px] font-bold uppercase text-black/30">—</span>
+                                  </div>
+                                )}
+                              </div>
+                              <span className="text-[8px] font-bold uppercase text-muted-foreground truncate w-full text-center">Acc</span>
                             </div>
-                          )}
+                          ))}
+                          {Array.from({ length: emptySlots }).map((_, i) => (
+                            <button
+                              key={`empty-${i}`}
+                              onClick={() => setAddAccessoryToId(outfit.id)}
+                              className="flex flex-col items-center gap-0.5"
+                            >
+                              <div
+                                className="w-full aspect-square border-2 border-dashed border-black/25 rounded flex items-center justify-center"
+                                style={{ background: "#FAFAFA" }}
+                              >
+                                <Plus className="w-3.5 h-3.5 text-black/25" />
+                              </div>
+                              <span className="text-[8px] font-bold uppercase text-black/25 whitespace-nowrap">+ Acc</span>
+                            </button>
+                          ))}
                         </div>
-                        <span className="text-[8px] font-bold uppercase text-muted-foreground">
-                          {SLOT_LABELS[item.category as SlotKey] ?? item.category}
-                        </span>
                       </div>
-                    ))}
-
-                    {/* + Add Accessory button */}
-                    <button
-                      onClick={() => setAddAccessoryToId(outfit.id)}
-                      className="flex-none flex flex-col items-center gap-0.5"
-                    >
-                      <div
-                        className="w-14 h-16 border-2 border-dashed border-black/30 rounded flex items-center justify-center"
-                        style={{ background: "#FAFAFA" }}
-                      >
-                        <Plus className="w-4 h-4 text-black/30" />
-                      </div>
-                      <span className="text-[8px] font-bold uppercase text-black/30 whitespace-nowrap">
-                        + Accessory
-                      </span>
-                    </button>
-                  </div>
+                    );
+                  })()}
                 </div>
 
                 {/* Footer: item count */}

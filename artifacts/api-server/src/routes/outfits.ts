@@ -100,6 +100,17 @@ router.patch("/outfits/:id/items", async (req, res): Promise<void> => {
     return;
   }
 
+  // Verify the clothing item exists
+  const [clothingItem] = await db
+    .select()
+    .from(clothingItemsTable)
+    .where(eq(clothingItemsTable.id, body.data.itemId));
+
+  if (!clothingItem) {
+    res.status(404).json({ error: "Clothing item not found" });
+    return;
+  }
+
   // Check item not already in outfit
   const existing = await db
     .select()
