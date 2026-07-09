@@ -1,20 +1,12 @@
 # ─────────────────────────────────────────────────────────────────────────────
 # Codemagic CI/CD — My Digital Closet iOS build
-# Docs: https://docs.codemagic.io/yaml-quick-start/building-a-capacitor-app/
 # ─────────────────────────────────────────────────────────────────────────────
 #
-# REQUIRED secrets — add all of these in Codemagic → Team → Global variables
-# & secrets, grouped under the variable group names shown below.
+# REQUIRED: In Codemagic → Integrations, add your App Store Connect API key
+# named exactly "My Digital Closet App" with Admin role.
 #
-# Group: app_store_credentials
-#   APP_STORE_CONNECT_KEY_ID        Key ID from App Store Connect → Users & Access → Keys
-#   APP_STORE_CONNECT_ISSUER_ID     Issuer ID from the same page
-#   APP_STORE_CONNECT_PRIVATE_KEY   Full contents of the .p8 file
-#
-# Group: build_env
-#   VITE_API_BASE_URL               Your deployed API URL, e.g.
-#                                   https://my-digital-closet.replit.app/api-server
-#   BUNDLE_ID                       com.mydigitalcloset.app
+# REQUIRED: In Codemagic → Team → Global variables, add group "build_env":
+#   VITE_API_BASE_URL   — your deployed API URL
 
 workflows:
   ios-app-store:
@@ -23,22 +15,17 @@ workflows:
     instance_type: mac_mini_m2
 
     integrations:
-      app_store_connect: My Digital Closet App   # name of the key in Codemagic → Integrations
+      app_store_connect: My Digital Closet App
 
     environment:
       ios_signing:
         distribution_type: app_store
         bundle_identifier: com.mydigitalcloset.app
-        api_key_resource:
-          resource_type: integration
-          integration_name: My Digital Closet App
       xcode: latest
       node: 20
       groups:
-        - app_store_credentials
         - build_env
       vars:
-        XCODE_WORKSPACE: ios/App/App.xcworkspace
         XCODE_SCHEME: App
 
     scripts:
@@ -48,7 +35,7 @@ workflows:
           npm install -g pnpm
           pnpm install --frozen-lockfile
 
-      # 2 — Build the Vite web bundle for Capacitor (base="/", no PORT needed)
+      # 2 — Build the Vite web bundle for Capacitor
       - name: Build web assets
         script: |
           cd artifacts/outfit-generator
@@ -75,19 +62,16 @@ workflows:
           cd artifacts/outfit-generator/ios/App
           agvtool new-version -all $BUILD_NUMBER
 
-      # 6 — Build & archive using Codemagic-managed code signing
-      #     (certificate + provisioning profile are injected automatically
-      #      by the ios_signing block above — no manual xcodebuild signing flags needed)
+      # 6 — Build & archive
       - name: Xcode archive
         script: |
           xcodebuild \
-            -workspace artifacts/outfit-generator/$XCODE_WORKSPACE \
+            -workspace artifacts/outfit-generator/ios/App/App.xcworkspace \
             -scheme $XCODE_SCHEME \
             -configuration Release \
             -archivePath $CM_BUILD_DIR/build/App.xcarchive \
             -destination "generic/platform=iOS" \
             archive \
-            CODE_SIGN_STYLE=Manual \
             | xcpretty
 
       # 7 — Export the signed .ipa
@@ -106,6 +90,6 @@ workflows:
 
     publishing:
       app_store_connect:
-        auth: integration              # uses the integrations.app_store_connect key above
+        auth: integration
         submit_to_testflight: true
-        submit_to_app_store: false     # flip to true when ready for full review
+        submit_to_app_store: false
