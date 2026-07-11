@@ -1,14 +1,17 @@
+import { randomUUID } from 'crypto';
 import { Readable } from 'stream';
 import {
   RequestUploadUrlBody,
   RequestUploadUrlResponse,
 } from '@workspace/api-zod';
 import { Router, type IRouter, type Request, type Response } from 'express';
+import express from 'express';
 
 import { ObjectPermission } from '../lib/objectAcl';
 import {
   ObjectNotFoundError,
   ObjectStorageService,
+  objectStorageClient,
 } from '../lib/objectStorage';
 
 const router: IRouter = Router();
@@ -26,6 +29,48 @@ function hasAuthenticatedSession(
 
   return req.isAuthenticated();
 }
+
+/**
+ * POST /storage/uploads/direct
+ *
+ * Accepts a raw image body (Content-Type: image/*) and writes it straight to
+ * GCS via createWriteStream — no sidecar signed-URL required.
+ * Returns { objectPath } usable with GET /storage/objects/*.
+ */
+router.post(
+  '/storage/uploads/direct',
+  express.raw({ type: 'image/*', limit: '15mb' }),
+  async (req: Request, res: Response) => {
+    try {
+      const privateDir = objectStorageService.getPrivateObjectDir();
+      const id = randomUUID();
+      const fullPath = `${privateDir}/uploads/${id}`;
+
+      // parse "/<bucketName>/<objectName>"
+      const parts = fullPath.replace(/^\//, '').split('/');
+      const bucketName = parts[0];
+      const objectName = parts.slice(1).join('/');
+
+      const bucket = objectStorageClient.bucket(bucketName);
+      const file   = bucket.file(objectName);
+
+      const contentType = (req.headers['content-type'] || 'image/png').split(';')[0].trim();
+
+      await new Promise<void>((resolve, reject) => {
+        const ws = file.createWriteStream({ contentType, resumable: false });
+        ws.on('finish', resolve);
+        ws.on('error',  reject);
+        ws.end(req.body as Buffer);
+      });
+
+      const objectPath = `/objects/uploads/${id}`;
+      res.json({ objectPath });
+    } catch (error) {
+      req.log.error({ err: error }, 'Direct upload failed');
+      res.status(500).json({ error: 'Upload failed' });
+    }
+  },
+);
 
 /**
  * POST /storage/uploads/request-url

@@ -45,25 +45,16 @@ type Phase =
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
 async function uploadBlob(blob: Blob, filename: string): Promise<string> {
-  const res = await fetch("/api/storage/uploads/request-url", {
+  const res = await fetch("/api/storage/uploads/direct", {
     method:  "POST",
-    headers: { "Content-Type": "application/json" },
-    body:    JSON.stringify({ name: filename, size: blob.size, contentType: "image/png" }),
+    headers: {
+      "Content-Type":          "image/png",
+      "X-Upload-Filename":     filename,
+    },
+    body: blob,
   });
-  if (!res.ok) throw new Error("Failed to request upload URL");
-
-  const { uploadURL, objectPath } = (await res.json()) as {
-    uploadURL: string;
-    objectPath: string;
-  };
-
-  const put = await fetch(uploadURL, {
-    method:  "PUT",
-    headers: { "Content-Type": "image/png" },
-    body:    blob,
-  });
-  if (!put.ok) throw new Error("Upload PUT failed");
-
+  if (!res.ok) throw new Error("Upload failed");
+  const { objectPath } = (await res.json()) as { objectPath: string };
   return objectPath;
 }
 
@@ -139,11 +130,11 @@ interface Props {
 }
 
 const PHOTO_TIPS = [
-  "Lay the clothing item flat.",
-  "Use a plain, consistent background (bed, sheet, or blanket).",
-  "Smooth out wrinkles.",
-  "Take the photo directly from above.",
-  "Make sure the entire item is visible.",
+  "Place the product on a clean, flat surface.",
+  "Use a plain, consistent background.",
+  "Make sure the label or product front is visible.",
+  "Take the photo in good lighting.",
+  "Make sure the entire product is in frame.",
 ] as const;
 
 export function QuickAddSheet({ open, onOpenChange, category, existingCount, onCreated }: Props) {

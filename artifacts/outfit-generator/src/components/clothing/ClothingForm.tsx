@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { ClothingItemInputCategory } from "@workspace/api-client-react";
-import { useUpload } from "@workspace/object-storage-web";
+import { useCallback, useState } from "react";
 import { ImagePlus, Loader2 } from "lucide-react";
 import { getImageUrl } from "@/lib/utils";
 
@@ -40,11 +40,24 @@ export function ClothingForm({ initialData, onSubmit, isSubmitting, submitLabel 
     },
   });
 
-  const { uploadFile, isUploading } = useUpload({
-    onSuccess: (response) => {
-      form.setValue("imageObjectPath", response.objectPath);
-    },
-  });
+  const [isUploading, setIsUploading] = useState(false);
+  const uploadFile = useCallback(async (file: File) => {
+    setIsUploading(true);
+    try {
+      const res = await fetch("/api/storage/uploads/direct", {
+        method: "POST",
+        headers: { "Content-Type": file.type || "image/png" },
+        body: file,
+      });
+      if (!res.ok) throw new Error("Upload failed");
+      const { objectPath } = await res.json() as { objectPath: string };
+      form.setValue("imageObjectPath", objectPath);
+    } catch (err) {
+      console.error("Upload error:", err);
+    } finally {
+      setIsUploading(false);
+    }
+  }, [form]);
 
   const imagePath = form.watch("imageObjectPath");
   const categories = Object.values(ClothingItemInputCategory);
