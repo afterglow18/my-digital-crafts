@@ -171,10 +171,10 @@ export default function FavoritesPage() {
 
       <header className="mb-5">
         <h1 className="text-4xl font-display font-bold uppercase tracking-tighter mb-1">
-          Totally 💛
+          My Faves 💕
         </h1>
         <p className="font-medium text-muted-foreground text-sm">
-          Hearted pieces. Hold &amp; drag to reorder.
+          Saved items. Hold &amp; drag to reorder.
         </p>
       </header>
 
