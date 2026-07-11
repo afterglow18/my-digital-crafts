@@ -286,55 +286,26 @@ export default function WardrobePage() {
                 )}
 
                 {/* ── ADD button ──────────────────────────────────────────
-                    Empty section: transparent tap zone over the baked-in pill.
-                    Items present: small "+" pill visible in top-right of section. */}
-                {items.length === 0 ? (
-                  <button
-                    onClick={addHandlers[key]}
-                    aria-label={btnLabel}
-                    data-testid={`add-btn-${key}`}
-                    style={{
-                      position: "absolute",
-                      top:    btnCY - btnH / 2,
-                      left:   carLeft,
-                      width:  carW,
-                      height: btnH,
-                      zIndex: 22,
-                      background: "transparent",
-                      border: "none",
-                      cursor: "pointer",
-                    }}
-                  />
-                ) : (
-                  <button
-                    onClick={addHandlers[key]}
-                    aria-label={btnLabel}
-                    data-testid={`add-btn-${key}`}
-                    style={{
-                      position: "absolute",
-                      top:    secTop + 6,
-                      left:   carLeft + carW - 34,
-                      width:  28,
-                      height: 28,
-                      zIndex: 30,
-                      background: "rgba(255,145,176,0.92)",
-                      border: "2px solid rgba(0,0,0,0.55)",
-                      borderRadius: "50%",
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: 18,
-                      lineHeight: 1,
-                      color: "#000",
-                      fontWeight: 700,
-                      boxShadow: "1px 1px 4px rgba(0,0,0,0.25)",
-                      padding: 0,
-                    }}
-                  >
-                    +
-                  </button>
-                )}
+                    Always a transparent tap zone sitting exactly over the
+                    baked-in pink pill in the background image (at btnCY).
+                    The carousel lives BELOW the pill (sectionTop > btnCY),
+                    so this zone is never obscured by items.               */}
+                <button
+                  onClick={addHandlers[key]}
+                  aria-label={btnLabel}
+                  data-testid={`add-btn-${key}`}
+                  style={{
+                    position: "absolute",
+                    top:    btnCY - btnH / 2,
+                    left:   carLeft,
+                    width:  carW,
+                    height: btnH,
+                    zIndex: 22,
+                    background: "transparent",
+                    border: "none",
+                    cursor: "pointer",
+                  }}
+                />
 
               </React.Fragment>
             );
