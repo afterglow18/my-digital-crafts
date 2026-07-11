@@ -81,7 +81,7 @@ export function WardrobePickerSheet({ open, onOpenChange, category, onPick, exis
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 bg-white border-b-2 border-black flex-shrink-0">
           <h2 className="font-display font-bold text-xl uppercase tracking-tight">
-            Pick a {label}
+            Pick {/^[aeiou]/i.test(label) ? 'an' : 'a'} {label}
           </h2>
           <button
             onClick={handleClose}
