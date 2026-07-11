@@ -364,6 +364,7 @@ export default function GeneratePage() {
                         items={items}
                         onCenteredItem={centredHandlers[key]}
                         maxPhotoH={maxPhotoH}
+                        disableSwipe
                       />
                     </div>
                   ) : (

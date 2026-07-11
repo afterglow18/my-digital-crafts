@@ -50,11 +50,13 @@ interface ClosetRowProps {
   /** Hard ceiling on photo height in px — set by the parent so all rows
    *  show cards at the same size regardless of available row height. */
   maxPhotoH?: number;
+  /** When true, swipe gestures are disabled (used on Generate page). */
+  disableSwipe?: boolean;
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
 export const ClosetRow = forwardRef<ClosetRowHandle, ClosetRowProps>(
-  ({ items, onCenteredItem, onItemTap, maxPhotoH }, ref) => {
+  ({ items, onCenteredItem, onItemTap, maxPhotoH, disableSwipe = false }, ref) => {
 
     // ── Container measurement ─────────────────────────────────────────────────
     const containerRef = useRef<HTMLDivElement>(null);
@@ -143,22 +145,23 @@ export const ClosetRow = forwardRef<ClosetRowHandle, ClosetRowProps>(
 
     // ── Pointer events ────────────────────────────────────────────────────────
     const onPointerDown = useCallback((e: React.PointerEvent) => {
+      if (disableSwipe) return;
       e.currentTarget.setPointerCapture(e.pointerId);
       dragStartX.current = e.clientX;
       isDragging.current = true;
       hasDragged.current = false;
       setTransition(false);
-    }, []);
+    }, [disableSwipe]);
 
     const onPointerMove = useCallback((e: React.PointerEvent) => {
-      if (!isDragging.current) return;
+      if (disableSwipe || !isDragging.current) return;
       const dx = e.clientX - dragStartX.current;
       if (!hasDragged.current && Math.abs(dx) > 6) hasDragged.current = true;
       setDragX(dx);
-    }, []);
+    }, [disableSwipe]);
 
     const onPointerUp = useCallback((e: React.PointerEvent) => {
-      if (!isDragging.current) return;
+      if (disableSwipe || !isDragging.current) return;
       isDragging.current = false;
       const dx    = e.clientX - dragStartX.current;
       const moved = hasDragged.current;
@@ -173,7 +176,7 @@ export const ClosetRow = forwardRef<ClosetRowHandle, ClosetRowProps>(
         }
       }
       setTimeout(() => setTransition(false), 320);
-    }, [slotW, items.length]);
+    }, [disableSwipe, slotW, items.length]);
 
     // ── Item tap (center → open details; side → re-center) ───────────────────
     const onItemActivate = useCallback((item: ClothingItem, idx: number) => {
