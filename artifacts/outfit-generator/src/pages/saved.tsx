@@ -375,6 +375,9 @@ export default function SavedPage() {
                                 </div>
                               )}
                             </button>
+                            {item.isFavorite && (
+                              <span className="absolute top-0 left-0 text-[10px] leading-none z-20 pointer-events-none">⭐</span>
+                            )}
                             <button
                               onClick={() => handleRemoveItem(outfit.id, item.id)}
                               className="absolute -top-1 -right-1 w-4 h-4 bg-white border border-black rounded-full flex items-center justify-center shadow-sm z-10"
