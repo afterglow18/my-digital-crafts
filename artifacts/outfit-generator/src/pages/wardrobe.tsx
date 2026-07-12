@@ -65,10 +65,10 @@ const LM = {
   doorR: 0.801,  // x≈820/1024 — right inner mirror glass edge
 
   rows: [
-    { sectionTop: 0.281, shelfY: 0.384, btnCY: 0.260 },  // MAKEUP     y=432–590
-    { sectionTop: 0.430, shelfY: 0.542, btnCY: 0.407 },  // SKINCARE   y=660–832
-    { sectionTop: 0.587, shelfY: 0.703, btnCY: 0.565 },  // HAIR       y=902–1080
-    { sectionTop: 0.742, shelfY: 0.845, btnCY: 0.723 },  // FRAGRANCES y=1140–1298
+    { sectionTop: 0.241, shelfY: 0.344, btnCY: 0.220 },  // MAKEUP
+    { sectionTop: 0.390, shelfY: 0.502, btnCY: 0.367 },  // SKINCARE
+    { sectionTop: 0.547, shelfY: 0.663, btnCY: 0.525 },  // HAIR
+    { sectionTop: 0.702, shelfY: 0.805, btnCY: 0.683 },  // FRAGRANCES
   ],
 
   saveAreaY: 0.84,
