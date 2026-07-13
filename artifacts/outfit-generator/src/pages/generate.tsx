@@ -562,7 +562,7 @@ export default function GeneratePage() {
                         gap: 2, padding: "0 12px",
                       }}
                     >
-                      <span>Next</span>
+                      <span>Repack</span>
                       <span style={{ fontSize: 14, lineHeight: 1 }}>✨</span>
                     </button>
 
