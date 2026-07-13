@@ -40,11 +40,7 @@ function Router() {
 function AppShell() {
   const { state } = useAuthContext();
 
-  const [entered, setEntered] = useState<boolean>(
-    () =>
-      sessionStorage.getItem("closet-entered") === "1" ||
-      new URLSearchParams(window.location.search).get("preview") === "1"
-  );
+  const [entered, setEntered] = useState<boolean>(true);
 
   const handleEnter = useCallback(() => {
     sessionStorage.setItem("closet-entered", "1");
