@@ -1,13 +1,12 @@
 /**
  * UpgradeSheet — three-tier paywall (Monthly / Yearly / Lifetime).
  *
- * Tier cards are selectable; lifetime is pre-selected as "Best Value".
- * Prices are pulled live from the RevenueCat offering when on-device,
- * and fall back to hardcoded values in the browser.
+ * Single-screen, no scroll. Lifetime pre-selected as "Best Value".
+ * All accent colour uses bg-primary (warm tan hsl(35 55% 82%)).
  *
  * RC package identifiers expected in the default offering:
- *   $rc_monthly   → Monthly $1.99
- *   $rc_annual    → Yearly  $19.99
+ *   $rc_monthly   → Monthly  $1.99
+ *   $rc_annual    → Yearly   $19.99
  *   $rc_lifetime  → Lifetime $9.99 (one-time)
  */
 import React, { useState, useCallback } from "react";
@@ -23,7 +22,7 @@ interface Props {
   onClose: () => void;
 }
 
-// ── Static copy ───────────────────────────────────────────────────────────────
+// ── Copy ──────────────────────────────────────────────────────────────────────
 
 const FEATURES = [
   "Unlimited clothing items",
@@ -40,28 +39,28 @@ const HEADLINES: Record<UpgradeReason, string> = {
 };
 
 const SUBTITLES: Record<UpgradeReason, string> = {
-  items:     "You've reached the free limit. Upgrade to pack everything.",
+  items:     "You've reached the free limit. Upgrade once, pack everything.",
   outfits:   "You've hit the free outfit limit. Upgrade to save every look.",
   mannequin: "A premium feature — unlock it once.",
 };
 
-// Fallback tier definitions (used when RC packages aren't loaded yet)
+// Fallback tier defs (browser — RC not available)
 const TIER_DEFAULTS: Record<TierId, {
   label: string;
   price: string;
   period: string;
-  notes: string[];
+  notes: [string, string];
   pkgId: string;
   best?: true;
 }> = {
-  monthly:  { label: "MONTHLY",  price: "$1.99",  period: "/month",    notes: ["Cancel anytime",  "Billed monthly"],  pkgId: "$rc_monthly"  },
-  yearly:   { label: "YEARLY",   price: "$19.99", period: "/year",     notes: ["Save 17%",        "Billed yearly"],   pkgId: "$rc_annual"   },
-  lifetime: { label: "LIFETIME", price: "$9.99",  period: "one-time",  notes: ["Pay once",        "Yours forever"],   pkgId: "$rc_lifetime", best: true },
+  monthly:  { label: "MONTHLY",  price: "$1.99",  period: "/month",   notes: ["Cancel anytime",  "Billed monthly"],  pkgId: "$rc_monthly"  },
+  yearly:   { label: "YEARLY",   price: "$19.99", period: "/year",    notes: ["Save 17%",        "Billed yearly"],   pkgId: "$rc_annual"   },
+  lifetime: { label: "LIFETIME", price: "$9.99",  period: "one-time", notes: ["Pay once",        "Yours forever"],   pkgId: "$rc_lifetime", best: true },
 };
 
 const TIER_ORDER: TierId[] = ["monthly", "yearly", "lifetime"];
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// ── RC helpers ────────────────────────────────────────────────────────────────
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function getRcPackage(offerings: any, pkgId: string): any | undefined {
@@ -72,7 +71,7 @@ function getRcPackage(offerings: any, pkgId: string): any | undefined {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function getPriceString(offerings: any, pkgId: string, fallback: string): string {
+function getLivePrice(offerings: any, pkgId: string, fallback: string): string {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return (getRcPackage(offerings, pkgId) as any)?.product?.priceString ?? fallback;
 }
@@ -80,54 +79,38 @@ function getPriceString(offerings: any, pkgId: string, fallback: string): string
 // ── Tier card ─────────────────────────────────────────────────────────────────
 
 function TierCard({
-  id,
-  selected,
-  onSelect,
-  price,
-  period,
-  notes,
-  label,
-  best,
+  id, selected, onSelect, price, period, notes, label, best,
 }: {
-  id:       TierId;
-  selected: boolean;
-  onSelect: (id: TierId) => void;
-  price:    string;
-  period:   string;
-  notes:    string[];
-  label:    string;
-  best?:    true;
+  id: TierId; selected: boolean; onSelect: (id: TierId) => void;
+  price: string; period: string; notes: [string, string]; label: string; best?: true;
 }) {
   return (
     <button
       onClick={() => onSelect(id)}
-      className="flex-1 flex flex-col rounded-2xl border-[3px] transition-all relative overflow-hidden text-left"
+      className="flex-1 flex flex-col rounded-xl border-[3px] transition-all relative overflow-hidden text-left"
       style={{
-        borderColor:    selected ? "#000" : "#D4C9B8",
-        background:     selected && id === "lifetime" ? "#F5C842"
-                      : selected                      ? "#FFF8E8"
-                      :                                 "#F0EBE3",
-        boxShadow: selected ? "3px 3px 0px 0px rgba(0,0,0,1)" : "none",
+        borderColor: selected ? "#000" : "#C9BAA5",
+        background:  selected ? "hsl(35 55% 82%)" : "hsl(35 30% 93%)",
+        boxShadow:   selected ? "3px 3px 0px 0px rgba(0,0,0,1)" : "none",
       }}
     >
       {best && (
         <span
-          className="absolute top-0 right-0 text-[9px] font-bold uppercase tracking-tight
-                     px-1.5 py-0.5 rounded-bl-xl"
-          style={{ background: "#E53935", color: "#fff" }}
+          className="absolute top-0 right-0 text-[8px] font-bold uppercase tracking-tight px-1.5 py-0.5 rounded-bl-lg"
+          style={{ background: "#C0390B", color: "#fff" }}
         >
           BEST ★ VALUE
         </span>
       )}
-      <div className="px-2.5 pt-3 pb-2.5 flex flex-col gap-1 flex-1">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-black/50">{label}</p>
-        <p className="font-display font-bold text-xl leading-none text-black">{price}</p>
-        <p className="text-[10px] font-semibold text-black/50">{period}</p>
-        <ul className="flex flex-col gap-0.5 mt-1">
+      <div className="px-2.5 pt-3 pb-2.5 flex flex-col gap-1">
+        <p className="text-[9px] font-bold uppercase tracking-widest text-black/50">{label}</p>
+        <p className="font-display font-bold text-[1.3rem] leading-none text-black">{price}</p>
+        <p className="text-[9px] font-semibold text-black/45">{period}</p>
+        <ul className="flex flex-col gap-0.5 mt-1.5">
           {notes.map((n) => (
             <li key={n} className="flex items-center gap-1">
               <Check className="w-2.5 h-2.5 shrink-0 text-black/60" strokeWidth={3} />
-              <span className="text-[9px] font-semibold text-black/60 leading-tight">{n}</span>
+              <span className="text-[8.5px] font-semibold text-black/55 leading-tight">{n}</span>
             </li>
           ))}
         </ul>
@@ -136,49 +119,39 @@ function TierCard({
   );
 }
 
-// ── Main sheet ────────────────────────────────────────────────────────────────
+// ── Sheet ─────────────────────────────────────────────────────────────────────
 
 export function UpgradeSheet({ reason, onClose }: Props) {
   const { offerings, purchase } = useSubscription();
-  const [selected,  setSelected] = useState<TierId>("lifetime");
-  const [status, setStatus] = useState<"idle" | "pending">("idle");
+  const [selected, setSelected] = useState<TierId>("lifetime");
+  const [status,   setStatus]   = useState<"idle" | "pending">("idle");
 
-  const tier = TIER_DEFAULTS[selected];
-
-  // Live prices from RC (or fallback)
   const prices: Record<TierId, string> = {
-    monthly:  getPriceString(offerings, "$rc_monthly",  "$1.99"),
-    yearly:   getPriceString(offerings, "$rc_annual",   "$19.99"),
-    lifetime: getPriceString(offerings, "$rc_lifetime", "$9.99"),
+    monthly:  getLivePrice(offerings, "$rc_monthly",  "$1.99"),
+    yearly:   getLivePrice(offerings, "$rc_annual",   "$19.99"),
+    lifetime: getLivePrice(offerings, "$rc_lifetime", "$9.99"),
   };
 
-  const ctaLabel = status === "pending" ? "Opening…"
-    : selected === "lifetime" ? `UNLOCK FOREVER – ${prices.lifetime} ›`
-    : selected === "yearly"   ? `SUBSCRIBE – ${prices.yearly}/YR ›`
-    :                           `SUBSCRIBE – ${prices.monthly}/MO ›`;
+  const ctaLabel =
+    status === "pending"        ? "Opening…"
+    : selected === "lifetime"   ? `UNLOCK FOREVER – ${prices.lifetime} ›`
+    : selected === "yearly"     ? `SUBSCRIBE – ${prices.yearly}/YR ›`
+    :                             `SUBSCRIBE – ${prices.monthly}/MO ›`;
 
   const handlePurchase = useCallback(async () => {
     if (status === "pending") return;
     setStatus("pending");
-
-    const rcPkg = getRcPackage(offerings, tier.pkgId);
-    if (!rcPkg) {
-      // No RC on browser — nothing to do
-      setStatus("idle");
-      return;
-    }
-
+    const pkg = getRcPackage(offerings, TIER_DEFAULTS[selected].pkgId);
+    if (!pkg) { setStatus("idle"); return; }
     try {
-      await purchase(rcPkg);
+      await purchase(pkg);
       onClose();
     } catch (err: unknown) {
       setStatus("idle");
       const msg = err instanceof Error ? err.message.toLowerCase() : "";
-      if (!msg.includes("cancel") && !msg.includes("dismiss")) {
-        console.error("Purchase error:", err);
-      }
+      if (!msg.includes("cancel") && !msg.includes("dismiss")) console.error("Purchase error:", err);
     }
-  }, [status, offerings, tier.pkgId, purchase, onClose]);
+  }, [status, offerings, selected, purchase, onClose]);
 
   return (
     <motion.div
@@ -186,17 +159,11 @@ export function UpgradeSheet({ reason, onClose }: Props) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: "100%" }}
       transition={{ type: "spring", damping: 28, stiffness: 240 }}
-      className="fixed inset-0 z-[80] flex flex-col max-w-md mx-auto overflow-hidden"
+      className="fixed inset-0 z-[80] flex flex-col max-w-md mx-auto"
       style={{ background: "#F8F4ED" }}
     >
-      {/* Top strip + close */}
-      <div
-        className="flex-shrink-0 flex items-start justify-end px-4 pt-4 pb-3"
-        style={{
-          background:  "repeating-linear-gradient(45deg, #F5C842 0px, #F5C842 12px, #F0B800 12px, #F0B800 24px)",
-          minHeight:   64,
-        }}
-      >
+      {/* Close button */}
+      <div className="flex justify-end px-4 pt-4 pb-0 flex-shrink-0">
         <button
           onClick={onClose}
           aria-label="Close"
@@ -208,85 +175,80 @@ export function UpgradeSheet({ reason, onClose }: Props) {
         </button>
       </div>
 
-      {/* Body — scrollable */}
-      <div className="flex-1 min-h-0 flex flex-col overflow-y-auto">
-        <div className="px-5 pt-4 pb-2 flex flex-col gap-3">
+      {/* Content — fills remaining height, no scroll */}
+      <div className="flex-1 min-h-0 flex flex-col justify-between px-5 pt-3 pb-2">
 
-          {/* Headline */}
-          <div>
-            <h1 className="font-display font-bold text-[2.4rem] uppercase tracking-tight leading-[0.9]">
-              {HEADLINES[reason]}
-            </h1>
-            <p className="text-sm font-semibold text-black/45 mt-2">
-              {SUBTITLES[reason]}
-            </p>
-          </div>
-
-          {/* Features card */}
-          <div
-            className="rounded-2xl border-[3px] border-black overflow-hidden"
-            style={{ background: "#111" }}
-          >
-            <p className="px-4 pt-3 pb-2 text-xs font-bold uppercase tracking-widest text-[#F5C842]">
-              Upgrade to Premium &amp; Get:
-            </p>
-            <ul className="px-4 pb-3 flex flex-col gap-1.5">
-              {FEATURES.map((f) => (
-                <li key={f} className="flex items-center gap-2.5">
-                  <span
-                    className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0"
-                    style={{ background: "#F5C842" }}
-                  >
-                    <Check className="w-2.5 h-2.5 text-black" strokeWidth={3.5} />
-                  </span>
-                  <span className="text-white text-sm font-medium leading-snug">{f}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Plan selector */}
-          <div>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-black/40 text-center mb-2">
-              Choose Your Plan
-            </p>
-            <div className="flex gap-2">
-              {TIER_ORDER.map((id) => {
-                const t = TIER_DEFAULTS[id];
-                return (
-                  <TierCard
-                    key={id}
-                    id={id}
-                    selected={selected === id}
-                    onSelect={setSelected}
-                    label={t.label}
-                    price={prices[id]}
-                    period={t.period}
-                    notes={t.notes}
-                    best={t.best}
-                  />
-                );
-              })}
-            </div>
-          </div>
-
+        {/* Headline */}
+        <div>
+          <h1 className="font-display font-bold text-[2.1rem] uppercase tracking-tight leading-[0.88]">
+            {HEADLINES[reason]}
+          </h1>
+          <p className="text-xs font-semibold text-black/45 mt-1.5">
+            {SUBTITLES[reason]}
+          </p>
         </div>
+
+        {/* Features card */}
+        <div className="rounded-2xl border-[3px] border-black overflow-hidden" style={{ background: "#111" }}>
+          <p className="px-3.5 pt-2.5 pb-1.5 text-[10px] font-bold uppercase tracking-widest"
+             style={{ color: "hsl(35 55% 82%)" }}>
+            Upgrade to Premium &amp; Get:
+          </p>
+          <ul className="px-3.5 pb-2.5 flex flex-col gap-1">
+            {FEATURES.map((f) => (
+              <li key={f} className="flex items-center gap-2">
+                <span
+                  className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0"
+                  style={{ background: "hsl(35 55% 82%)" }}
+                >
+                  <Check className="w-2.5 h-2.5 text-black" strokeWidth={3.5} />
+                </span>
+                <span className="text-white text-xs font-medium leading-snug">{f}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Plan selector */}
+        <div>
+          <p className="text-[9px] font-bold uppercase tracking-widest text-black/35 text-center mb-1.5">
+            Choose Your Plan
+          </p>
+          <div className="flex gap-2">
+            {TIER_ORDER.map((id) => {
+              const t = TIER_DEFAULTS[id];
+              return (
+                <TierCard
+                  key={id}
+                  id={id}
+                  selected={selected === id}
+                  onSelect={setSelected}
+                  label={t.label}
+                  price={prices[id]}
+                  period={t.period}
+                  notes={t.notes}
+                  best={t.best}
+                />
+              );
+            })}
+          </div>
+        </div>
+
       </div>
 
       {/* CTA footer */}
       <div
-        className="px-5 pt-3 flex flex-col gap-3 flex-shrink-0"
-        style={{ paddingBottom: "max(1.75rem, env(safe-area-inset-bottom))" }}
+        className="px-5 pt-2 flex flex-col gap-2 flex-shrink-0"
+        style={{ paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))" }}
       >
         <button
           onClick={handlePurchase}
           disabled={status === "pending"}
-          className="w-full py-4 rounded-2xl font-display font-bold text-lg uppercase
+          className="w-full py-3.5 rounded-2xl font-display font-bold text-lg uppercase
                      tracking-tight border-[3px] border-black text-black
                      active:translate-x-0.5 active:translate-y-0.5 transition-all
-                     disabled:opacity-60 disabled:cursor-not-allowed"
+                     disabled:opacity-60 disabled:cursor-not-allowed bg-primary"
           style={{
-            background:  "#F5C842",
             boxShadow: status === "pending" ? "none" : "4px 4px 0px 0px rgba(0,0,0,1)",
           }}
         >
@@ -294,8 +256,7 @@ export function UpgradeSheet({ reason, onClose }: Props) {
         </button>
         <button
           onClick={onClose}
-          className="text-sm font-semibold text-black/35 text-center
-                     hover:text-black/55 transition-colors"
+          className="text-sm font-semibold text-black/35 text-center hover:text-black/55 transition-colors"
         >
           Maybe Later
         </button>
