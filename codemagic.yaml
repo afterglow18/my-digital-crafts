@@ -137,7 +137,7 @@ workflows:
           xcodebuild \
             -exportArchive \
             -archivePath "$CM_BUILD_DIR/build/App.xcarchive" \
-            -exportOptionsPlist app-store/ExportOptions.plist \
+            -exportOptionsPlist /Users/builder/export_options.plist \
             -exportPath "$CM_BUILD_DIR/build/ipa"
 
       - name: Upload to TestFlight
