@@ -37,6 +37,11 @@ type Phase =
   | "pick"       // two-button landing screen
   | "uploading"; // encoding + uploading PNG, creating DB record
 
+interface UploadProgress {
+  current: number;
+  total:   number;
+}
+
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
 /** Convert a Blob to a JPEG data URL (compressed, ready for DB storage). */
@@ -88,6 +93,7 @@ const CATEGORY_EXAMPLES: Record<string, { emoji: string; items: string[] }> = {
 export function QuickAddSheet({ open, onOpenChange, category, existingCount, onCreated }: Props) {
   const [phase,    setPhase]   = useState<Phase>("pick");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [progress, setProgress] = useState<UploadProgress | null>(null);
 
   // Two separate file inputs: one triggers camera, one opens gallery
   const cameraInputRef  = useRef<HTMLInputElement>(null);
@@ -103,30 +109,20 @@ export function QuickAddSheet({ open, onOpenChange, category, existingCount, onC
     onOpenChange(false);
   }, [onOpenChange]);
 
-  // ── File picked → encode → upload → create DB record → close ──
-  const handleFile = useCallback(async (file: File) => {
-    setErrorMsg(null);
-    setPhase("uploading");
-
-    // 1. Encode to PNG
+  // ── Single-file encode + save (returns true on success) ──────────────────
+  const saveOneFile = useCallback(async (file: File, itemIndex: number): Promise<boolean> => {
     let png: Blob;
     try {
       png = await encodeToPng(file);
     } catch (err) {
       console.error("PNG encoding failed:", err);
-      setErrorMsg("Could not read the photo. Please try again.");
-      setPhase("pick");
-      return;
+      return false;
     }
-
-    // 2. Convert to data URL & save
     try {
-      const path = await blobToDataUrl(png);
-
+      const path     = await blobToDataUrl(png);
       const label    = CATEGORY_LABELS[category];
-      const n        = existingCount + 1;
+      const n        = itemIndex + 1;
       const autoName = n === 1 ? label : `${label} ${n}`;
-
       await new Promise<void>((resolve, reject) => {
         createItem.mutate(
           { data: { name: autoName, category, imageObjectPath: path } },
@@ -140,19 +136,40 @@ export function QuickAddSheet({ open, onOpenChange, category, existingCount, onC
           },
         );
       });
-
-      handleClose();
+      return true;
     } catch (err) {
       console.error("Upload / create failed:", err);
-      setErrorMsg("Could not save the item. Check your connection and try again.");
-      setPhase("pick");
+      return false;
     }
-  }, [category, existingCount, createItem, queryClient, handleClose]);
+  }, [category, createItem, queryClient, onCreated]);
+
+  // ── Process one or many files sequentially ────────────────────────────────
+  const handleFiles = useCallback(async (files: File[]) => {
+    if (!files.length) return;
+    setErrorMsg(null);
+    setPhase("uploading");
+    setProgress({ current: 0, total: files.length });
+
+    let failed = 0;
+    for (let i = 0; i < files.length; i++) {
+      setProgress({ current: i + 1, total: files.length });
+      const ok = await saveOneFile(files[i], existingCount + i);
+      if (!ok) failed++;
+    }
+
+    setProgress(null);
+    if (failed > 0) {
+      setErrorMsg(`${failed} photo${failed > 1 ? "s" : ""} could not be saved. Please try again.`);
+      setPhase("pick");
+    } else {
+      handleClose();
+    }
+  }, [saveOneFile, existingCount, handleClose]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) handleFile(file);
-    e.target.value = ""; // allow re-selecting same file
+    const files = Array.from(e.target.files ?? []);
+    if (files.length) handleFiles(files);
+    e.target.value = "";
   };
 
   if (!open) return null;
@@ -286,7 +303,11 @@ export function QuickAddSheet({ open, onOpenChange, category, existingCount, onC
               </div>
               <div className="text-center">
                 <p className="font-display font-bold text-2xl uppercase tracking-tight">Saving…</p>
-                <p className="text-sm text-muted-foreground mt-1">Adding to your suitcase.</p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {progress && progress.total > 1
+                    ? `Photo ${progress.current} of ${progress.total}`
+                    : "Adding to your suitcase."}
+                </p>
               </div>
             </motion.div>
           )}
@@ -304,11 +325,12 @@ export function QuickAddSheet({ open, onOpenChange, category, existingCount, onC
         className="hidden"
         onChange={handleInputChange}
       />
-      {/* Gallery — opens photo library / file picker */}
+      {/* Gallery — opens photo library / file picker (multiple selection) */}
       <input
         ref={galleryInputRef}
         type="file"
         accept="image/*"
+        multiple
         className="hidden"
         onChange={handleInputChange}
       />
