@@ -55,11 +55,13 @@ function useImageRect(ref: RefObject<HTMLDivElement>): ImgRect {
       if (!c) return;
       const cW = c.clientWidth, cH = c.clientHeight;
       const iR = IMG_W / IMG_H;
-      // Cover: scale image to fill container completely, crop overflow
+      // Contain: show full image, letterbox if needed (gaps blend with bg)
       let rW: number, rH: number, rL: number, rT: number;
-      if (cW / cH > iR) {
+      if (cW / cH < iR) {
+        // Container more portrait than image → fit to width, gap top/bottom
         rW = cW; rH = cW / iR; rL = 0; rT = (cH - rH) / 2;
       } else {
+        // Container wider → fit to height, gap left/right
         rH = cH; rW = cH * iR; rT = 0; rL = (cW - rW) / 2;
       }
       setRect({ top: rT, left: rL, width: rW, height: rH, containerH: cH });
@@ -246,7 +248,7 @@ export default function GeneratePage() {
         width: "100%",
         height: `calc(100dvh - ${NAV_H}px)`,
         overflow: "hidden",
-        background: "#1C0E05",
+        background: "#C8B9A2",
       }}
     >
       {/* ── Background image — object-fit:cover avoids WebKit negative-left clipping bug ── */}
@@ -257,7 +259,7 @@ export default function GeneratePage() {
           position: "absolute",
           top: 0, left: 0,
           width: "100%", height: "100%",
-          objectFit: "cover",
+          objectFit: "contain",
           objectPosition: "center",
           display: "block",
           pointerEvents: "none",
