@@ -191,23 +191,19 @@ export function UpgradeSheet({ reason, onClose }: Props) {
 
         {/* Features card */}
         <div className="rounded-2xl border-[3px] border-black overflow-hidden" style={{ background: "#111" }}>
-          <p className="px-3.5 pt-2.5 pb-1.5 text-[10px] font-bold uppercase tracking-widest"
-             style={{ color: "hsl(35 55% 82%)" }}>
-            Upgrade to Premium &amp; Get:
-          </p>
-          <ul className="px-3.5 pb-2.5 flex flex-col gap-1">
-            {FEATURES.map((f) => (
-              <li key={f} className="flex items-center gap-2">
-                <span
-                  className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0"
-                  style={{ background: "hsl(35 55% 82%)" }}
-                >
-                  <Check className="w-2.5 h-2.5 text-black" strokeWidth={3.5} />
-                </span>
-                <span className="text-white text-xs font-medium leading-snug">{f}</span>
-              </li>
-            ))}
-          </ul>
+          <div className="px-4 py-4 flex flex-col gap-2">
+            <p className="font-display font-bold uppercase text-[1.45rem] leading-[0.92] tracking-tight"
+               style={{ color: "hsl(35 55% 82%)" }}>
+              Unlimited packed suitcases
+            </p>
+            <p className="font-display font-bold uppercase text-[1.45rem] leading-[0.92] tracking-tight"
+               style={{ color: "hsl(35 55% 82%)" }}>
+              Unlimited saved outfits
+            </p>
+            <p className="text-white/60 text-xs font-medium mt-1 leading-snug">
+              Your entire wardrobe, beautifully packed — forever.
+            </p>
+          </div>
         </div>
 
         {/* Plan selector */}
