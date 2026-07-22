@@ -32,14 +32,19 @@ export function PremiumSheet({ onClose }: Props) {
   const { purchase } = useEntitlements();
   const { restore, isRestoring } = useSubscription();
   const [pending, setPending] = useState<PurchaseProduct | null>(null);
+  const [error,   setError]   = useState<string | null>(null);
 
   const handlePurchase = useCallback(
     async (product: PurchaseProduct) => {
       if (pending) return;
+      setError(null);
       setPending(product);
       const result: PurchaseResult = await purchase(product);
       if (result === "success") {
         onClose();
+      } else if (result === "unavailable") {
+        setPending(null);
+        setError("Purchase unavailable. Make sure you're on a real device with an App Store account.");
       } else {
         setPending(null);
       }
@@ -134,6 +139,9 @@ export function PremiumSheet({ onClose }: Props) {
           {pending === "unlock" ? "Opening checkout…" : "Or get Unlock Forever – $4.99 (no mannequin)"}
         </button>
 
+        {error && (
+          <p className="text-xs font-semibold text-center text-red-600">{error}</p>
+        )}
         <button
           onClick={onClose}
           className="text-sm font-bold text-black/40 text-center underline underline-offset-2

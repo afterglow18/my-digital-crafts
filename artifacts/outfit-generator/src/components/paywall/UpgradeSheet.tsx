@@ -160,8 +160,12 @@ function TierCard({
 
 export function UpgradeSheet({ reason, onClose }: Props) {
   const { offerings, purchase, restore, isRestoring } = useSubscription();
-  const [selected, setSelected] = useState<TierId>("lifetime");
+  // Default to monthly — it's the only package currently configured in RevenueCat.
+  // Lifetime / yearly are shown as UI options but will show an error if tapped
+  // before those packages are added to the RC dashboard.
+  const [selected, setSelected] = useState<TierId>("monthly");
   const [status,   setStatus]   = useState<"idle" | "pending">("idle");
+  const [error,    setError]    = useState<string | null>(null);
 
   const prices: Record<TierId, string> = {
     monthly:  getLivePrice(offerings, "$rc_monthly",  "$1.99"),
@@ -177,16 +181,24 @@ export function UpgradeSheet({ reason, onClose }: Props) {
 
   const handlePurchase = useCallback(async () => {
     if (status === "pending") return;
+    setError(null);
     setStatus("pending");
     const pkg = getRcPackage(offerings, TIER_DEFAULTS[selected].pkgId);
-    if (!pkg) { setStatus("idle"); return; }
+    if (!pkg) {
+      setStatus("idle");
+      setError("This plan isn't available yet. Please try Monthly.");
+      return;
+    }
     try {
       await purchase(pkg);
       onClose();
     } catch (err: unknown) {
       setStatus("idle");
       const msg = err instanceof Error ? err.message.toLowerCase() : "";
-      if (!msg.includes("cancel") && !msg.includes("dismiss")) console.error("Purchase error:", err);
+      if (!msg.includes("cancel") && !msg.includes("dismiss")) {
+        console.error("Purchase error:", err);
+        setError("Something went wrong. Please try again.");
+      }
     }
   }, [status, offerings, selected, purchase, onClose]);
 
@@ -288,6 +300,9 @@ export function UpgradeSheet({ reason, onClose }: Props) {
         >
           {ctaLabel}
         </button>
+        {error && (
+          <p className="text-xs font-semibold text-center text-red-600">{error}</p>
+        )}
         <button
           onClick={onClose}
           className="text-sm font-semibold text-black/35 text-center hover:text-black/55 transition-colors"
