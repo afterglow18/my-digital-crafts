@@ -47,3 +47,13 @@ Thumbs.db
 # Replit
 .cache/
 .local/
+
+# Large asset folders — not needed for Codemagic builds
+attached_assets/
+AppPreview*.mp4
+AppPreview*.mov
+AppPreview2_*.mp4
+AppPreview3_*.mp4
+AppPreview4_*.mp4
+AppPreview5_*.mp4
+AppPreview6_*.mp4
