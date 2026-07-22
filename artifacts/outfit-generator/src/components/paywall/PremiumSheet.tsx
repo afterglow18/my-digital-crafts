@@ -11,6 +11,10 @@ import { motion } from "framer-motion";
 import { X, Check } from "lucide-react";
 import { useEntitlements, PurchaseResult } from "@/hooks/useEntitlements";
 import type { PurchaseProduct } from "@/lib/entitlements";
+import { useSubscription } from "@/lib/revenuecat";
+
+const PRIVACY_URL = "https://app.notion.com/p/My-Digital-Collection-Privacy-Policy-39682db6065380b19dedcb108d4a0ef4?source=copy_link";
+const TERMS_URL   = "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/";
 
 interface Props {
   onClose: () => void;
@@ -26,6 +30,7 @@ const PRO_FEATURES = [
 
 export function PremiumSheet({ onClose }: Props) {
   const { purchase } = useEntitlements();
+  const { restore, isRestoring } = useSubscription();
   const [pending, setPending] = useState<PurchaseProduct | null>(null);
 
   const handlePurchase = useCallback(
@@ -136,6 +141,28 @@ export function PremiumSheet({ onClose }: Props) {
         >
           Maybe Later
         </button>
+
+        {/* Restore + Legal */}
+        <div className="flex flex-col items-center gap-1.5 pt-0.5">
+          <button
+            onClick={() => { restore().catch(() => {}); }}
+            disabled={isRestoring}
+            className="text-xs font-semibold text-black/40 hover:text-black/60 transition-colors disabled:opacity-50"
+          >
+            {isRestoring ? "Restoring…" : "Restore Purchases"}
+          </button>
+          <p className="text-[10px] text-black/30 text-center leading-snug">
+            <a href={TERMS_URL} target="_blank" rel="noopener noreferrer"
+               className="underline underline-offset-2 hover:text-black/50 transition-colors">
+              Terms of Use
+            </a>
+            {" · "}
+            <a href={PRIVACY_URL} target="_blank" rel="noopener noreferrer"
+               className="underline underline-offset-2 hover:text-black/50 transition-colors">
+              Privacy Policy
+            </a>
+          </p>
+        </div>
       </div>
     </motion.div>
   );

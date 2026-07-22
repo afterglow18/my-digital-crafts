@@ -76,6 +76,43 @@ function getLivePrice(offerings: any, pkgId: string, fallback: string): string {
   return (getRcPackage(offerings, pkgId) as any)?.product?.priceString ?? fallback;
 }
 
+// ── Legal footer ──────────────────────────────────────────────────────────────
+
+const PRIVACY_URL = "https://app.notion.com/p/My-Digital-Collection-Privacy-Policy-39682db6065380b19dedcb108d4a0ef4?source=copy_link";
+const TERMS_URL   = "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/";
+
+function RestoreAndLegal({
+  restore,
+  isRestoring,
+}: {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  restore: () => Promise<any>;
+  isRestoring: boolean;
+}) {
+  return (
+    <div className="flex flex-col items-center gap-1.5 pt-0.5">
+      <button
+        onClick={() => { restore().catch(() => {}); }}
+        disabled={isRestoring}
+        className="text-xs font-semibold text-black/40 hover:text-black/60 transition-colors disabled:opacity-50"
+      >
+        {isRestoring ? "Restoring…" : "Restore Purchases"}
+      </button>
+      <p className="text-[10px] text-black/30 text-center leading-snug">
+        <a href={TERMS_URL} target="_blank" rel="noopener noreferrer"
+           className="underline underline-offset-2 hover:text-black/50 transition-colors">
+          Terms of Use
+        </a>
+        {" · "}
+        <a href={PRIVACY_URL} target="_blank" rel="noopener noreferrer"
+           className="underline underline-offset-2 hover:text-black/50 transition-colors">
+          Privacy Policy
+        </a>
+      </p>
+    </div>
+  );
+}
+
 // ── Tier card ─────────────────────────────────────────────────────────────────
 
 function TierCard({
@@ -122,7 +159,7 @@ function TierCard({
 // ── Sheet ─────────────────────────────────────────────────────────────────────
 
 export function UpgradeSheet({ reason, onClose }: Props) {
-  const { offerings, purchase } = useSubscription();
+  const { offerings, purchase, restore, isRestoring } = useSubscription();
   const [selected, setSelected] = useState<TierId>("lifetime");
   const [status,   setStatus]   = useState<"idle" | "pending">("idle");
 
@@ -257,6 +294,7 @@ export function UpgradeSheet({ reason, onClose }: Props) {
         >
           Maybe Later
         </button>
+        <RestoreAndLegal restore={restore} isRestoring={isRestoring} />
       </div>
     </motion.div>
   );
