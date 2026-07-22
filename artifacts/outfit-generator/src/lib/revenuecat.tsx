@@ -25,7 +25,10 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 export const REVENUECAT_ENTITLEMENT_IDENTIFIER = "premium";
 
 const RC_TEST_KEY = import.meta.env.VITE_REVENUECAT_TEST_KEY as string | undefined;
-const RC_IOS_KEY  = import.meta.env.VITE_REVENUECAT_IOS_KEY  as string | undefined;
+// Support both VITE_REVENUECAT_IOS_API_KEY (preferred) and the legacy VITE_REVENUECAT_IOS_KEY
+const RC_IOS_KEY  =
+  (import.meta.env.VITE_REVENUECAT_IOS_API_KEY as string | undefined) ||
+  (import.meta.env.VITE_REVENUECAT_IOS_KEY     as string | undefined);
 
 function getApiKey(): string {
   const isNative = Capacitor.isNativePlatform();
