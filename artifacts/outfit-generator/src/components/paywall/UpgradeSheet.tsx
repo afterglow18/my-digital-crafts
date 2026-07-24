@@ -33,9 +33,9 @@ const FEATURES = [
 ] as const;
 
 const HEADLINES: Record<UpgradeReason, string> = {
-  items:     "UNLOCK YOUR UNLIMITED DIGITAL SUITCASE",
-  outfits:   "UNLOCK YOUR UNLIMITED DIGITAL SUITCASE",
-  mannequin: "UNLOCK YOUR UNLIMITED DIGITAL SUITCASE",
+  items:     "UNLOCK YOUR UNLIMITED DIGITAL CRAFTS",
+  outfits:   "UNLOCK YOUR UNLIMITED DIGITAL CRAFTS",
+  mannequin: "UNLOCK YOUR UNLIMITED DIGITAL CRAFTS",
 };
 
 const SUBTITLES: Record<UpgradeReason, string> = {
@@ -243,7 +243,7 @@ export function UpgradeSheet({ reason, onClose }: Props) {
           <div className="px-4 py-4 flex flex-col gap-2">
             <p className="font-display font-bold uppercase text-[1.45rem] leading-[0.92] tracking-tight"
                style={{ color: "hsl(35 55% 82%)" }}>
-              Unlimited packed suitcases
+              Unlimited crafts
             </p>
             <p className="font-display font-bold uppercase text-[1.45rem] leading-[0.92] tracking-tight"
                style={{ color: "hsl(35 55% 82%)" }}>
