@@ -160,7 +160,7 @@ export default function SavedPage() {
   };
 
   return (
-    <div className="min-h-full flex flex-col pt-8 px-4 pb-8 bg-secondary/10 relative">
+    <div className="min-h-full flex flex-col pt-8 px-4 md:px-6 pb-8 bg-secondary/10 relative">
       <header className="mb-6">
         <h1 className="text-4xl font-display font-bold uppercase tracking-tighter mb-1">Lookbook</h1>
         <div className="flex items-center justify-between">
@@ -217,7 +217,7 @@ export default function SavedPage() {
           ))}
         </div>
       ) : outfits && outfits.length > 0 ? (
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-6 md:grid md:grid-cols-2 md:gap-4 md:items-start">
           {outfits.map((outfit) => {
             // Group items by category — first match per slot wins
             const bySlot = (outfit.items ?? []).reduce<Partial<Record<SlotKey, ClothingItem>>>(

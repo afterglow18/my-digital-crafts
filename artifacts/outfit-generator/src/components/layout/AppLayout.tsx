@@ -28,18 +28,20 @@ export function AppLayout({ children }: AppLayoutProps) {
   ];
 
   return (
-    <div className="min-h-[100dvh] w-full bg-[#f8f9fa] flex justify-center lg:py-8 lg:px-4">
-      {/* Phone Frame Constraint for Desktop */}
-      <div className="w-full max-w-md bg-background h-[100dvh] lg:min-h-[850px] lg:h-[850px] lg:border-[6px] lg:border-black lg:rounded-[3rem] lg:shadow-2xl relative overflow-hidden flex flex-col lg:overflow-y-auto">
+    // On phone/tablet (< lg): full-screen, no chrome.
+    // On desktop (lg+): centered phone frame with grey backdrop.
+    <div className="min-h-[100dvh] w-full bg-background lg:bg-[#f8f9fa] flex justify-center lg:py-8 lg:px-4">
+      {/* Full-width on phone & iPad; phone frame only on desktop */}
+      <div className="w-full lg:max-w-md bg-background h-[100dvh] lg:min-h-[850px] lg:h-[850px] lg:border-[6px] lg:border-black lg:rounded-[3rem] lg:shadow-2xl relative overflow-hidden flex flex-col">
 
         {/* Main Content Area */}
         <main className="flex-1 overflow-y-auto pb-[90px] relative">
           {children}
         </main>
 
-        {/* Bottom Navigation */}
+        {/* Bottom Navigation — centred & capped on wide screens so items don't spread */}
         <nav className="absolute bottom-0 left-0 right-0 bg-white border-t-[3px] border-black p-3 pb-safe z-[40]">
-          <ul className="flex items-center justify-around">
+          <ul className="flex items-center justify-around md:max-w-sm md:mx-auto lg:max-w-none">
             {navItems.map((item) => {
               const isActive = location === item.href;
               const Icon = item.icon;
