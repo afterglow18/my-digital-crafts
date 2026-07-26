@@ -314,7 +314,7 @@ function CleanupPhotoOverlay({ sourceImageUrl, onConfirm, onClose }: CleanupPhot
         </button>
         <button
           onClick={handleSave}
-          disabled={processing}
+          disabled={processing && selected === "cleaned"}
           className="flex-1 py-3 rounded-xl border-[3px] border-pink-600
                      font-display font-bold text-sm uppercase tracking-tight
                      bg-pink-500 text-white
