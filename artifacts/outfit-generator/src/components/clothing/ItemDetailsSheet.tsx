@@ -556,8 +556,9 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
                 className="w-full h-full object-contain"
               />
             </div>
-            {/* Clean Up Photo button — floats over the bottom of the photo */}
-            <button
+            {/* Clean Up Photo button — hidden once the stored image is already a
+                cleaned PNG (data:image/png = background-removed version). */}
+            {!displayedImageUrl.startsWith("data:image/png") && <button
               onClick={() => setShowCleanup(true)}
               className="absolute bottom-3 right-3 flex items-center gap-1.5
                          px-3 py-1.5 rounded-lg
@@ -568,7 +569,7 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
             >
               <Sparkles className="w-3.5 h-3.5" />
               Clean Up Photo
-            </button>
+            </button>}
           </div>
         )}
 
