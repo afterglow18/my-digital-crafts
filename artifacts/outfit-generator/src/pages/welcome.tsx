@@ -68,7 +68,7 @@ export default function WelcomePage({ onEnter }: Props) {
       transition={{ duration: EXIT_MS / 1000, ease: "easeIn" }}
       style={{
         position: "fixed", inset: 0, zIndex: 200,
-        background: "#C8563A",
+        background: "#B04228",
         overflow: "hidden",
       }}
     >
