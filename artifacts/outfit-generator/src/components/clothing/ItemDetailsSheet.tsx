@@ -398,13 +398,19 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
   const deleteItem  = useDeleteClothingItem();
   const queryClient = useQueryClient();
 
-  // Reset form whenever item changes
+  // Reset form and cleanup state whenever item changes
   useEffect(() => {
     if (item) setForm(toForm(item));
     setShowDeleteConfirm(false);
     setShowCleanup(false);
     setLocalImageUrl(null);
   }, [item?.id]);
+
+  const invalidateAll = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: getListClothingQueryKey() });
+    queryClient.invalidateQueries({ queryKey: getListOutfitsQueryKey() });
+    queryClient.invalidateQueries({ queryKey: getWardrobeStatsQueryKey() });
+  }, [queryClient]);
 
   if (!item || !form) return null;
 
@@ -421,6 +427,8 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
       {
         id: item.id,
         data: {
+          // Always send every editable field so the backend can clear it when empty.
+          // Backend converts "" → null in DB.
           name:          form.name.trim() || item.name,
           brand:         form.brand.trim(),
           color:         form.color.trim(),
@@ -436,9 +444,7 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
       },
       {
         onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: getListClothingQueryKey() });
-          queryClient.invalidateQueries({ queryKey: getListOutfitsQueryKey() });
-          queryClient.invalidateQueries({ queryKey: getWardrobeStatsQueryKey() });
+          invalidateAll();
           onClose();
         },
       }
@@ -450,9 +456,7 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
       { id: item.id },
       {
         onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: getListClothingQueryKey() });
-          queryClient.invalidateQueries({ queryKey: getListOutfitsQueryKey() });
-          queryClient.invalidateQueries({ queryKey: getWardrobeStatsQueryKey() });
+          invalidateAll();
           onDeleted?.();
           onClose();
         },
@@ -507,13 +511,7 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
                 patch("isFavorite")(next);
                 updateItem.mutate(
                   { id: item.id, data: { isFavorite: next } },
-                  {
-                    onSuccess: () => {
-                      queryClient.invalidateQueries({ queryKey: getListClothingQueryKey() });
-                      queryClient.invalidateQueries({ queryKey: getListOutfitsQueryKey() });
-                      queryClient.invalidateQueries({ queryKey: getWardrobeStatsQueryKey() });
-                    },
-                  }
+                  { onSuccess: invalidateAll }
                 );
               }}
               className={`w-9 h-9 border-2 rounded-full flex items-center justify-center transition-all
