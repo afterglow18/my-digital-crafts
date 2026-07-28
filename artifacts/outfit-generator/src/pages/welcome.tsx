@@ -53,6 +53,7 @@ export default function WelcomePage({ onEnter }: Props) {
       const t = setTimeout(finish, EXIT_MS);
       return () => clearTimeout(t);
     }
+    return undefined;
   }, [phase, finish]);
 
   const handleOpen = () => {
