@@ -10,6 +10,19 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 
+// CSS repeating brick pattern — warm terracotta, tiles at 60×28px
+const BRICK_SVG = encodeURIComponent(
+  `<svg xmlns='http://www.w3.org/2000/svg' width='60' height='28'>` +
+  `<rect width='60' height='28' fill='#6B3A28'/>` +
+  `<rect x='1' y='1' width='28' height='12' rx='1' fill='#B85540'/>` +
+  `<rect x='31' y='1' width='28' height='12' rx='1' fill='#A84D39'/>` +
+  `<rect x='1' y='15' width='14' height='12' rx='1' fill='#A84D39'/>` +
+  `<rect x='16' y='15' width='28' height='12' rx='1' fill='#B85540'/>` +
+  `<rect x='46' y='15' width='13' height='12' rx='1' fill='#A84D39'/>` +
+  `</svg>`
+);
+const BRICK_BG = `#6B3A28 url("data:image/svg+xml,${BRICK_SVG}") repeat`;
+
 interface Props { onEnter: () => void; }
 
 type Phase = "idle" | "painting" | "exiting";
@@ -67,10 +80,23 @@ export default function WelcomePage({ onEnter }: Props) {
       transition={{ duration: EXIT_MS / 1000, ease: "easeIn" }}
       style={{
         position: "fixed", inset: 0, zIndex: 200,
-        background: "#000",
+        background: BRICK_BG,
+        backgroundSize: "60px 28px",
         overflow: "hidden",
       }}
     >
+      {/* ── Dark scrim — keeps title legible over brick; fades when painting starts ── */}
+      <motion.div
+        aria-hidden
+        animate={{ opacity: phase === "idle" ? 1 : 0 }}
+        transition={{ duration: 0.3 }}
+        style={{
+          position: "absolute", inset: 0, zIndex: 0,
+          background: "rgba(0,0,0,0.52)",
+          pointerEvents: "none",
+        }}
+      />
+
       {/* ── Hero image — clip-path sweeps left → right on tap ── */}
       <motion.img
         src="/crafts-hero.png"
