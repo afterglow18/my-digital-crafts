@@ -131,15 +131,28 @@ export default function WelcomePage({ onEnter }: Props) {
             position: "absolute",
             top: brushY - brushSize * 0.5,
             zIndex: 3,
-            fontSize: brushSize,
-            lineHeight: 1,
+            width: brushSize * 0.42,
+            height: brushSize * 1.35,
             transform: "rotate(-30deg)",
-            filter: "drop-shadow(0 4px 12px rgba(0,0,0,0.5))",
+            filter: "drop-shadow(0 4px 12px rgba(0,0,0,0.55))",
             pointerEvents: "none",
             userSelect: "none",
           }}
         >
-          🖌️
+          {/* Inline SVG paintbrush — brown wooden handle */}
+          <svg viewBox="0 0 34 110" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+            {/* Handle — warm brown wood */}
+            <rect x="12" y="0" width="10" height="72" rx="5" fill="#7B3F10"/>
+            <rect x="13.5" y="2" width="3" height="66" rx="2" fill="rgba(255,220,170,0.18)"/>
+            {/* Ferrule — brushed metal band */}
+            <rect x="10" y="69" width="14" height="11" rx="2" fill="#C8A45A"/>
+            <rect x="10" y="72" width="14" height="2" fill="rgba(255,255,255,0.18)"/>
+            {/* Bristles — tapered dark tuft */}
+            <ellipse cx="17" cy="95" rx="7" ry="16" fill="#1E0D06"/>
+            <ellipse cx="17" cy="86" rx="6.5" ry="5" fill="#2A1208"/>
+            {/* Bristle highlight */}
+            <ellipse cx="15" cy="90" rx="2" ry="7" fill="rgba(255,255,255,0.07)"/>
+          </svg>
         </motion.div>
       )}
 
