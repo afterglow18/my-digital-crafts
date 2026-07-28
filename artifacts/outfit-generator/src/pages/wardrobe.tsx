@@ -321,12 +321,18 @@ export default function WardrobePage() {
                   }}
                 >
                   <span style={{
-                    fontSize: Math.max(9, pH(ir, 0.013)),
+                    display: "inline-block",
+                    background: "rgba(72, 36, 14, 0.78)",
+                    color: "#EDD9B4",
+                    borderRadius: 20,
+                    padding: `2px 12px`,
+                    fontSize: Math.max(9, pH(ir, 0.012)),
                     fontWeight: 800,
                     letterSpacing: "0.12em",
-                    color: "#3A2210",
                     fontFamily: "var(--font-display)",
                     textTransform: "uppercase",
+                    boxShadow: "0 1px 5px rgba(0,0,0,0.22)",
+                    border: "1px solid rgba(237,217,180,0.18)",
                   }}>
                     {btnLabel}
                   </span>
