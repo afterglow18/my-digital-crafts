@@ -49,7 +49,7 @@ function Field({
 }) {
   return (
     <div className="flex flex-col gap-1">
-      <label className="text-[10px] font-bold uppercase tracking-widest text-[#6B3A1F]/55">
+      <label className="text-[10px] font-bold uppercase tracking-widest text-[#6B3838]/55">
         {label}
       </label>
       <input
@@ -57,9 +57,9 @@ function Field({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder ?? label}
-        className="w-full border-2 border-[#8B5E3C]/30 rounded-lg px-3 py-2 text-sm font-medium
-                   text-[#3A2210] bg-[#fdf8f0] focus:outline-none focus:ring-2 focus:ring-[#C8944E]/30
-                   placeholder:font-normal placeholder:text-[#6B3A1F]/25"
+        className="w-full border-2 border-[#8C4F48]/30 rounded-lg px-3 py-2 text-sm font-medium
+                   text-[#3A2210] bg-[#fdf8f0] focus:outline-none focus:ring-2 focus:ring-[#A06058]/30
+                   placeholder:font-normal placeholder:text-[#6B3838]/25"
       />
     </div>
   );
@@ -78,15 +78,15 @@ function SelectField({
 }) {
   return (
     <div className="flex flex-col gap-1">
-      <label className="text-[10px] font-bold uppercase tracking-widest text-[#6B3A1F]/55">
+      <label className="text-[10px] font-bold uppercase tracking-widest text-[#6B3838]/55">
         {label}
       </label>
       <div className="relative">
         <select
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full appearance-none border-2 border-[#8B5E3C]/30 rounded-lg px-3 py-2 pr-8
-                     text-sm font-medium text-[#3A2210] bg-[#fdf8f0] focus:outline-none focus:ring-2 focus:ring-[#C8944E]/30
+          className="w-full appearance-none border-2 border-[#8C4F48]/30 rounded-lg px-3 py-2 pr-8
+                     text-sm font-medium text-[#3A2210] bg-[#fdf8f0] focus:outline-none focus:ring-2 focus:ring-[#A06058]/30
                      cursor-pointer"
         >
           {options.map((o) => (
@@ -95,7 +95,7 @@ function SelectField({
             </option>
           ))}
         </select>
-        <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-[#6B3A1F]/40" />
+        <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-[#6B3838]/40" />
       </div>
     </div>
   );
@@ -167,7 +167,7 @@ function CleanupPhotoOverlay({ sourceImageUrl, onConfirm, onClose }: CleanupPhot
     >
       {/* Header */}
       <div
-        className="flex items-center justify-between px-4 bg-[#EDD9B4] border-b-2 border-[#8B5E3C]/25 flex-shrink-0"
+        className="flex items-center justify-between px-4 bg-[#EDD9B4] border-b-2 border-[#8C4F48]/25 flex-shrink-0"
         style={{ paddingTop: "max(0.75rem, env(safe-area-inset-top))", paddingBottom: "0.75rem" }}
       >
         <h2 className="font-display font-bold text-xl uppercase tracking-tight flex items-center gap-2 text-[#3A2210]">
@@ -176,7 +176,7 @@ function CleanupPhotoOverlay({ sourceImageUrl, onConfirm, onClose }: CleanupPhot
         </h2>
         <button
           onClick={handleClose}
-          className="w-9 h-9 border-2 border-[#8B5E3C]/50 rounded-full flex items-center justify-center
+          className="w-9 h-9 border-2 border-[#8C4F48]/50 rounded-full flex items-center justify-center
                      bg-[#fdf8f0] text-[#3A2210] shadow-[2px_2px_0px_0px_rgba(139,94,60,0.25)]
                      active:translate-y-0.5 active:translate-x-0.5 active:shadow-none transition-all"
         >
@@ -188,7 +188,7 @@ function CleanupPhotoOverlay({ sourceImageUrl, onConfirm, onClose }: CleanupPhot
       <div className="flex-1 flex flex-col gap-4 p-4 overflow-y-auto">
 
         {/* Hint */}
-        <p className="text-center font-display font-bold text-[11px] uppercase tracking-widest text-[#6B3A1F]/50">
+        <p className="text-center font-display font-bold text-[11px] uppercase tracking-widest text-[#6B3838]/50">
           {processing
             ? "Removing background on device…"
             : failed
@@ -205,7 +205,7 @@ function CleanupPhotoOverlay({ sourceImageUrl, onConfirm, onClose }: CleanupPhot
             className="flex-1 flex flex-col rounded-2xl overflow-hidden transition-all"
             style={{
               border: selected === "original"
-                ? "4px solid #8B5E3C"
+                ? "4px solid #8C4F48"
                 : "4px solid rgba(0,0,0,0.10)",
               boxShadow: selected === "original"
                 ? "4px 4px 0px 0px rgba(139,94,60,0.45)"
@@ -227,13 +227,13 @@ function CleanupPhotoOverlay({ sourceImageUrl, onConfirm, onClose }: CleanupPhot
                 style={{ width: "100%", objectFit: "contain", maxHeight: 220, display: "block" }}
               />
               {selected === "original" && (
-                <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-[#8B5E3C]
+                <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-[#8C4F48]
                                 border-2 border-white flex items-center justify-center shadow">
                   <Check className="w-3 h-3 text-white" strokeWidth={3} />
                 </div>
               )}
             </div>
-            <div className="bg-[#EDD9B4] py-2 px-2 border-t border-[#8B5E3C]/20">
+            <div className="bg-[#EDD9B4] py-2 px-2 border-t border-[#8C4F48]/20">
               <p className="font-display font-bold text-[11px] uppercase tracking-widest text-center text-[#3A2210]">
                 Original
               </p>
@@ -247,7 +247,7 @@ function CleanupPhotoOverlay({ sourceImageUrl, onConfirm, onClose }: CleanupPhot
             className="flex-1 flex flex-col rounded-2xl overflow-hidden transition-all"
             style={{
               border: selected === "cleaned" && cleanedUrl
-                ? "4px solid #8B5E3C"
+                ? "4px solid #8C4F48"
                 : "4px solid rgba(0,0,0,0.10)",
               boxShadow: selected === "cleaned" && cleanedUrl
                 ? "4px 4px 0px 0px rgba(139,94,60,0.45)"
@@ -271,7 +271,7 @@ function CleanupPhotoOverlay({ sourceImageUrl, onConfirm, onClose }: CleanupPhot
                     style={{ width: "100%", objectFit: "contain", maxHeight: 220, display: "block" }}
                   />
                   {selected === "cleaned" && (
-                    <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-[#8B5E3C]
+                    <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-[#8C4F48]
                                     border-2 border-white flex items-center justify-center shadow">
                       <Check className="w-3 h-3 text-white" strokeWidth={3} />
                     </div>
@@ -291,7 +291,7 @@ function CleanupPhotoOverlay({ sourceImageUrl, onConfirm, onClose }: CleanupPhot
                 </div>
               )}
             </div>
-            <div className="bg-[#EDD9B4] py-2 px-2 border-t border-[#8B5E3C]/20">
+            <div className="bg-[#EDD9B4] py-2 px-2 border-t border-[#8C4F48]/20">
               <p className="font-display font-bold text-[11px] uppercase tracking-widest text-center text-[#3A2210]">
                 Cleaned ✨
               </p>
@@ -302,10 +302,10 @@ function CleanupPhotoOverlay({ sourceImageUrl, onConfirm, onClose }: CleanupPhot
       </div>
 
       {/* Footer */}
-      <div className="px-4 py-4 bg-[#EDD9B4] border-t-2 border-[#8B5E3C]/25 flex-shrink-0 flex gap-3">
+      <div className="px-4 py-4 bg-[#EDD9B4] border-t-2 border-[#8C4F48]/25 flex-shrink-0 flex gap-3">
         <button
           onClick={handleClose}
-          className="px-5 py-3 rounded-xl border-2 border-[#8B5E3C]/40 bg-[#fdf8f0] text-[#3A2210]
+          className="px-5 py-3 rounded-xl border-2 border-[#8C4F48]/40 bg-[#fdf8f0] text-[#3A2210]
                      font-display font-bold text-sm uppercase tracking-tight
                      shadow-[2px_2px_0px_0px_rgba(139,94,60,0.25)]
                      active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all"
@@ -315,9 +315,9 @@ function CleanupPhotoOverlay({ sourceImageUrl, onConfirm, onClose }: CleanupPhot
         <button
           onClick={handleSave}
           disabled={processing && selected === "cleaned"}
-          className="flex-1 py-3 rounded-xl border-2 border-[#8B5E3C]
+          className="flex-1 py-3 rounded-xl border-2 border-[#8C4F48]
                      font-display font-bold text-sm uppercase tracking-tight
-                     bg-gradient-to-b from-[#C8944E] to-[#8B5E3C] text-[#fdf8f0]
+                     bg-gradient-to-b from-[#A06058] to-[#8C4F48] text-[#fdf8f0]
                      shadow-[0_4px_12px_rgba(139,94,60,0.4)]
                      active:opacity-90
                      disabled:opacity-50 disabled:cursor-not-allowed transition-all"
@@ -498,7 +498,7 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
       >
         {/* ── Header ── */}
         <div className="sticky top-0 z-10 flex items-center justify-between px-4
-                        bg-[#EDD9B4] border-b-2 border-[#8B5E3C]/25 flex-shrink-0"
+                        bg-[#EDD9B4] border-b-2 border-[#8C4F48]/25 flex-shrink-0"
           style={{ paddingTop: "max(0.75rem, env(safe-area-inset-top))", paddingBottom: "0.75rem" }}>
           <h2 className="font-display font-bold text-xl uppercase tracking-tight text-[#3A2210]">
             Item Details
@@ -516,8 +516,8 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
               }}
               className={`w-9 h-9 border-2 rounded-full flex items-center justify-center transition-all
                           ${form.isFavorite
-                            ? "border-[#C8563A] bg-[#C8563A] shadow-[2px_2px_0px_0px_rgba(139,94,60,0.3)]"
-                            : "border-[#8B5E3C]/40 bg-[#fdf8f0] shadow-[2px_2px_0px_0px_rgba(139,94,60,0.2)]"}`}
+                            ? "border-[#8C4F48] bg-[#8C4F48] shadow-[2px_2px_0px_0px_rgba(139,94,60,0.3)]"
+                            : "border-[#8C4F48]/40 bg-[#fdf8f0] shadow-[2px_2px_0px_0px_rgba(139,94,60,0.2)]"}`}
               title="Favourite"
             >
               <Heart
@@ -529,7 +529,7 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
             {/* Close */}
             <button
               onClick={onClose}
-              className="w-9 h-9 border-2 border-[#8B5E3C]/40 rounded-full flex items-center justify-center
+              className="w-9 h-9 border-2 border-[#8C4F48]/40 rounded-full flex items-center justify-center
                          bg-[#fdf8f0] text-[#3A2210] shadow-[2px_2px_0px_0px_rgba(139,94,60,0.2)]
                          active:translate-y-0.5 active:translate-x-0.5 active:shadow-none transition-all"
             >
@@ -560,7 +560,7 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
               onClick={() => setShowCleanup(true)}
               className="absolute bottom-3 right-3 flex items-center gap-1.5
                          px-3 py-1.5 rounded-lg
-                         border-2 border-[#8B5E3C]/50 bg-[#EDD9B4] text-[#3A2210]
+                         border-2 border-[#8C4F48]/50 bg-[#EDD9B4] text-[#3A2210]
                          font-display font-bold text-[11px] uppercase tracking-widest
                          shadow-[2px_2px_0px_0px_rgba(139,94,60,0.3)]
                          active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all"
@@ -605,7 +605,7 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
 
           {/* Notes */}
           <div className="flex flex-col gap-1">
-            <label className="text-[10px] font-bold uppercase tracking-widest text-[#6B3A1F]/55">
+            <label className="text-[10px] font-bold uppercase tracking-widest text-[#6B3838]/55">
               Notes
             </label>
             <textarea
@@ -613,9 +613,9 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
               onChange={(e) => patch("notes")(e.target.value)}
               placeholder="Anything worth remembering…"
               rows={3}
-              className="w-full border-2 border-[#8B5E3C]/30 rounded-lg px-3 py-2 text-sm font-medium
-                         text-[#3A2210] bg-[#fdf8f0] focus:outline-none focus:ring-2 focus:ring-[#C8944E]/30 resize-none
-                         placeholder:font-normal placeholder:text-[#6B3A1F]/25"
+              className="w-full border-2 border-[#8C4F48]/30 rounded-lg px-3 py-2 text-sm font-medium
+                         text-[#3A2210] bg-[#fdf8f0] focus:outline-none focus:ring-2 focus:ring-[#A06058]/30 resize-none
+                         placeholder:font-normal placeholder:text-[#6B3838]/25"
             />
           </div>
 
@@ -628,8 +628,8 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
               options={CATEGORY_OPTIONS}
             />
             <div className="flex flex-col gap-1 opacity-50 pointer-events-none">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-[#6B3A1F]/55">Times Worn</span>
-              <div className="border-2 border-[#8B5E3C]/20 rounded-lg px-3 py-2 text-sm font-medium bg-[#fdf8f0]/50 text-[#3A2210]">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-[#6B3838]/55">Times Worn</span>
+              <div className="border-2 border-[#8C4F48]/20 rounded-lg px-3 py-2 text-sm font-medium bg-[#fdf8f0]/50 text-[#3A2210]">
                 {item.timesWorn ?? 0}
               </div>
             </div>
@@ -638,7 +638,7 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
         </div>
 
         {/* ── Footer actions ── */}
-        <div className="sticky bottom-0 px-4 py-4 bg-[#EDD9B4] border-t-2 border-[#8B5E3C]/25 flex-shrink-0 flex flex-col gap-2">
+        <div className="sticky bottom-0 px-4 py-4 bg-[#EDD9B4] border-t-2 border-[#8C4F48]/25 flex-shrink-0 flex flex-col gap-2">
 
           {/* Save (only when dirty) */}
           <AnimatePresence>
@@ -651,8 +651,8 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
                 disabled={updateItem.isPending}
                 className="w-full py-3 rounded-xl flex items-center justify-center gap-2 text-sm
                            font-bold uppercase tracking-tight
-                           bg-gradient-to-b from-[#C8944E] to-[#8B5E3C] text-[#fdf8f0]
-                           border-2 border-[#8B5E3C]
+                           bg-gradient-to-b from-[#A06058] to-[#8C4F48] text-[#fdf8f0]
+                           border-2 border-[#8C4F48]
                            shadow-[0_4px_12px_rgba(139,94,60,0.35)]
                            active:opacity-90 transition-all"
               >
@@ -667,8 +667,8 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
             <button
               onClick={() => setShowDeleteConfirm(true)}
               className="w-full py-3 rounded-xl flex items-center justify-center gap-2 text-sm
-                         font-bold uppercase border-2 border-[#8B5E3C]/20 text-[#6B3A1F]/40
-                         hover:border-[#C8563A] hover:text-[#C8563A] transition-all"
+                         font-bold uppercase border-2 border-[#8C4F48]/20 text-[#6B3838]/40
+                         hover:border-[#8C4F48] hover:text-[#8C4F48] transition-all"
             >
               <Trash2 className="w-4 h-4" />
               Delete from Crafts Forever
@@ -677,7 +677,7 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
             <div className="flex gap-2">
               <button
                 onClick={() => setShowDeleteConfirm(false)}
-                className="flex-1 py-3 rounded-xl text-sm font-bold uppercase border-2 border-[#8B5E3C]/40 bg-[#fdf8f0] text-[#3A2210]
+                className="flex-1 py-3 rounded-xl text-sm font-bold uppercase border-2 border-[#8C4F48]/40 bg-[#fdf8f0] text-[#3A2210]
                            shadow-[2px_2px_0px_0px_rgba(139,94,60,0.2)]
                            active:translate-y-0.5 active:translate-x-0.5 active:shadow-none transition-all"
               >
@@ -686,8 +686,8 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
               <button
                 onClick={handleDelete}
                 disabled={deleteItem.isPending}
-                className="flex-1 py-3 rounded-xl text-sm font-bold uppercase border-2 border-[#C8563A]
-                           bg-[#C8563A] text-white
+                className="flex-1 py-3 rounded-xl text-sm font-bold uppercase border-2 border-[#8C4F48]
+                           bg-[#8C4F48] text-white
                            shadow-[2px_2px_0px_0px_rgba(139,60,40,0.4)]
                            active:translate-y-0.5 active:translate-x-0.5 active:shadow-none transition-all
                            disabled:opacity-50"

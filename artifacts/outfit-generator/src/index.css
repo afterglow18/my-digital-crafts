@@ -64,13 +64,13 @@
   --app-font-sans: 'Outfit', sans-serif;
   --app-font-display: 'Syne', sans-serif;
   
-  /* Suitcase Palette: Warm Tan, Leather Brown, Cream, Black */
+  /* Crafts Palette: Terracotta, Cream, Dark Brown */
   --background: 40 30% 97%; /* Cream */
   --foreground: 0 0% 9%; /* Almost Black */
   
   --border: 0 0% 9%;
   --input: 0 0% 9%;
-  --ring: 28 45% 40%;
+  --ring: 6 32% 42%;
   
   --card: 0 0% 100%;
   --card-foreground: 0 0% 9%;
@@ -80,10 +80,10 @@
   --popover-foreground: 0 0% 9%;
   --popover-border: 0 0% 9%;
   
-  --primary: 35 55% 82%; /* Warm Tan */
-  --primary-foreground: 28 50% 18%; /* Dark Brown */
+  --primary: 6 32% 42%; /* Terracotta #8C4F48 */
+  --primary-foreground: 40 50% 93%; /* Cream */
   
-  --secondary: 28 42% 55%; /* Medium Leather Brown */
+  --secondary: 6 25% 55%; /* Lighter terracotta */
   --secondary-foreground: 40 30% 97%; /* Cream */
   
   --muted: 0 0% 90%;

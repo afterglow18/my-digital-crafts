@@ -409,17 +409,17 @@ export function QuickAddSheet({ open, onOpenChange, category, existingCount, onC
     >
       {/* Header */}
       <div
-        className="flex items-center justify-between px-4 bg-white border-b-2 border-black flex-shrink-0"
+        className="flex items-center justify-between px-4 bg-[#EDD9B4] border-b-2 border-[#8C4F48]/25 flex-shrink-0"
         style={{ paddingTop: "max(0.75rem, env(safe-area-inset-top))", paddingBottom: "0.75rem" }}
       >
-        <h2 className="font-display font-bold text-xl uppercase tracking-tight">
+        <h2 className="font-display font-bold text-xl uppercase tracking-tight text-[#3A2210]">
           {phase === "preview" ? "Choose Version" : `Add ${label}`}
         </h2>
         {(phase === "pick" || phase === "preview") && (
           <button
             onClick={handleClose}
-            className="w-9 h-9 border-2 border-black rounded-full flex items-center justify-center
-                       bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]
+            className="w-9 h-9 border-2 border-[#8C4F48]/50 rounded-full flex items-center justify-center
+                       bg-[#fdf8f0] text-[#3A2210] shadow-[2px_2px_0px_0px_rgba(140,79,72,0.25)]
                        active:translate-y-0.5 active:translate-x-0.5 active:shadow-none transition-all"
           >
             <X className="w-4 h-4" />
@@ -557,21 +557,21 @@ export function QuickAddSheet({ open, onOpenChange, category, existingCount, onC
                   padding: 0,
                 }}
               >
-                <div className="bg-black relative" style={{ minHeight: 180 }}>
+                <div className="bg-[#f0e8df] relative" style={{ minHeight: 180 }}>
                   <img
                     src={originalUrl!}
                     alt="Original"
                     style={{ width: "100%", objectFit: "contain", maxHeight: 180, display: "block" }}
                   />
                   {selected === "original" && (
-                    <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black
+                    <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-[#8C4F48]
                                     border-2 border-white flex items-center justify-center">
                       <Check className="w-3 h-3 text-white" strokeWidth={3} />
                     </div>
                   )}
                 </div>
-                <div className="bg-white py-2 px-2 border-t-2 border-black/10">
-                  <p className="font-display font-bold text-[11px] uppercase tracking-widest text-center">
+                <div className="bg-[#EDD9B4] py-2 px-2 border-t border-[#8C4F48]/20">
+                  <p className="font-display font-bold text-[11px] uppercase tracking-widest text-center text-[#3A2210]">
                     Original
                   </p>
                 </div>
@@ -610,7 +610,7 @@ export function QuickAddSheet({ open, onOpenChange, category, existingCount, onC
                         style={{ width: "100%", objectFit: "contain", maxHeight: 180, display: "block" }}
                       />
                       {selected === "cleaned" && (
-                        <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black
+                        <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-[#8C4F48]
                                         border-2 border-white flex items-center justify-center">
                           <Check className="w-3 h-3 text-white" strokeWidth={3} />
                         </div>
@@ -645,8 +645,8 @@ export function QuickAddSheet({ open, onOpenChange, category, existingCount, onC
                     </div>
                   )}
                 </div>
-                <div className="bg-white py-2 px-2 border-t-2 border-black/10">
-                  <p className="font-display font-bold text-[11px] uppercase tracking-widest text-center">
+                <div className="bg-[#EDD9B4] py-2 px-2 border-t border-[#8C4F48]/20">
+                  <p className="font-display font-bold text-[11px] uppercase tracking-widest text-center text-[#3A2210]">
                     Cleaned ✨
                   </p>
                 </div>
@@ -658,8 +658,8 @@ export function QuickAddSheet({ open, onOpenChange, category, existingCount, onC
               <button
                 onClick={() => setPhase("pick")}
                 className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl
-                           border-[3px] border-black bg-white font-display font-bold text-sm uppercase
-                           tracking-tight shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]
+                           border-2 border-[#8C4F48]/40 bg-[#fdf8f0] text-[#3A2210] font-display font-bold text-sm uppercase
+                           tracking-tight shadow-[2px_2px_0px_0px_rgba(140,79,72,0.25)]
                            active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all"
               >
                 <RotateCcw className="w-4 h-4" />
@@ -668,11 +668,11 @@ export function QuickAddSheet({ open, onOpenChange, category, existingCount, onC
               <button
                 onClick={handleSave}
                 disabled={bgProcessing && selected === "cleaned"}
-                className="flex-1 py-3 rounded-xl border-[3px] border-black
+                className="flex-1 py-3 rounded-xl border-2 border-[#8C4F48]
                            font-display font-bold text-sm uppercase tracking-tight
-                           bg-black text-white
-                           shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]
-                           active:translate-x-0.5 active:translate-y-0.5 active:shadow-none
+                           bg-[#8C4F48] text-[#F5E8D8]
+                           shadow-[0_4px_12px_rgba(140,79,72,0.4)]
+                           active:opacity-90
                            disabled:opacity-50 disabled:cursor-not-allowed transition-all"
               >
                 {bgProcessing && selected === "cleaned"

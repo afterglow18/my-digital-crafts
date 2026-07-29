@@ -322,8 +322,8 @@ export default function WardrobePage() {
                 >
                   <span style={{
                     display: "inline-block",
-                    background: "rgba(72, 36, 14, 0.78)",
-                    color: "#EDD9B4",
+                    background: "rgba(140, 79, 72, 0.88)",
+                    color: "#F5E8D8",
                     borderRadius: 20,
                     padding: `2px 12px`,
                     fontSize: Math.max(9, pH(ir, 0.012)),

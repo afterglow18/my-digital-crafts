@@ -202,13 +202,13 @@ export default function WelcomePage({ onEnter }: Props) {
             fontFamily: "var(--font-display, sans-serif)",
             fontWeight: 800, fontSize: 16,
             letterSpacing: "0.03em",
-            color: "#3A2210",
-            background: "linear-gradient(to bottom, #EDD9B4, #C8944E)",
-            border: "1.5px solid #B8894E",
+            color: "#F5E8D8",
+            background: "#8C4F48",
+            border: "1.5px solid #6B3838",
             borderRadius: 100,
             padding: "14px 46px",
             cursor: "pointer",
-            boxShadow: "0 4px 24px rgba(140,90,40,0.55), 2px 2px 0 rgba(0,0,0,0.7)",
+            boxShadow: "0 4px 24px rgba(140,79,72,0.55), 2px 2px 0 rgba(0,0,0,0.5)",
             whiteSpace: "nowrap",
           }}
         >
