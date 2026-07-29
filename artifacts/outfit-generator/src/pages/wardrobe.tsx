@@ -233,7 +233,7 @@ export default function WardrobePage() {
           {/* ── Page title ── */}
           <div style={{
             position: "absolute",
-            top: `calc(${pY(ir, 0.048)}px + env(safe-area-inset-top, 0px))`,
+            top: `calc(${pY(ir, 0.030)}px + env(safe-area-inset-top, 0px))`,
             left: 8,
             right: 8,
             zIndex: 25,
@@ -261,7 +261,7 @@ export default function WardrobePage() {
               aria-label={`${totalItems} of ${FREE_ITEM_LIMIT} items used — tap to upgrade`}
               style={{
                 position: "absolute",
-                top: `calc(${pY(ir, 0.082)}px + env(safe-area-inset-top, 0px))`, left: "50%", transform: "translateX(-50%)",
+                top: `calc(${pY(ir, 0.096)}px + env(safe-area-inset-top, 0px))`, left: "50%", transform: "translateX(-50%)",
                 zIndex: 25,
                 padding: "3px 14px", borderRadius: 20, border: "none",
                 background: totalItems >= FREE_ITEM_LIMIT
