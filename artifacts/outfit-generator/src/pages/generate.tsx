@@ -287,7 +287,7 @@ export default function GeneratePage() {
               <div style={{
                 fontFamily: "'Dancing Script', cursive",
                 fontWeight: 700,
-                fontSize: Math.max(16, Math.min(pW(ir, 0.075), ir.containerW * 0.095)),
+                fontSize: Math.max(16, Math.min(pW(ir, 0.075), ir.containerH * 0.095)),
                 color: "#F5F0E8",
                 lineHeight: 1.1,
                 textShadow: "0 1px 8px rgba(0,0,0,0.18)",
