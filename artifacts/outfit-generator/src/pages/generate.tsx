@@ -274,7 +274,7 @@ export default function GeneratePage() {
             {/* ── Page title ── */}
             <div style={{
               position: "absolute",
-              top: `calc(${pY(ir, 0.030)}px + env(safe-area-inset-top, 0px))`,
+              top: `calc(${pY(ir, 0.016)}px + env(safe-area-inset-top, 0px))`,
               left: 8,
               right: 8,
               zIndex: 25,
