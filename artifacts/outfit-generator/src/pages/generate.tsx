@@ -32,10 +32,10 @@ const LM = {
   doorL: 0.182,
   doorR: 0.776,
   rows: [
-    { sectionTop: 0.160, shelfY: 0.278, btnCY: 0.140 },  // ART SUPPLIES
-    { sectionTop: 0.328, shelfY: 0.445, btnCY: 0.308 },  // CRAFT SUPPLIES
-    { sectionTop: 0.495, shelfY: 0.612, btnCY: 0.475 },  // PROJECTS
-    { sectionTop: 0.662, shelfY: 0.780, btnCY: 0.642 },  // STORAGE & ORG
+    { sectionTop: 0.175, shelfY: 0.293, btnCY: 0.140 },  // ART SUPPLIES
+    { sectionTop: 0.343, shelfY: 0.460, btnCY: 0.308 },  // CRAFT SUPPLIES
+    { sectionTop: 0.510, shelfY: 0.627, btnCY: 0.475 },  // PROJECTS
+    { sectionTop: 0.677, shelfY: 0.795, btnCY: 0.642 },  // STORAGE
   ],
   // Action bar: from just below FRAGRANCES through the full bottom
   barY:   0.848,
