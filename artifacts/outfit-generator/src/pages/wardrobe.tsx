@@ -43,8 +43,8 @@ type RowKey   = "outfits" | "beauty" | "toiletries" | "essentials";
 type Category = "outfits" | "beauty" | "toiletries" | "essentials";
 
 const ROWS: { key: RowKey; btnLabel: string }[] = [
-  { key: "outfits",    btnLabel: "+ ADD ART SUPPLIES"    },
-  { key: "beauty",     btnLabel: "+ ADD CRAFT SUPPLIES"  },
+  { key: "outfits",    btnLabel: "+ ART SUPPLIES"         },
+  { key: "beauty",     btnLabel: "+ CRAFT SUPPLIES"       },
   { key: "toiletries", btnLabel: "+ ADD PROJECTS"        },
   { key: "essentials", btnLabel: "+ ADD STORAGE"         },
 ];
