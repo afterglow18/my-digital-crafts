@@ -188,10 +188,10 @@ const PHOTO_TIPS = [
 ] as const;
 
 const CATEGORY_EXAMPLES: Record<string, { emoji: string; items: string[] }> = {
-  outfits:    { emoji: "👗", items: ["Tops", "Bottoms", "Shoes", "Swim", "Undergarments", "Dresses", "Accessories"] },
-  beauty:     { emoji: "💄", items: ["Makeup", "Skincare", "Hair", "Jewelry", "Nail Polish"] },
-  toiletries: { emoji: "🪥", items: ["Shower", "Dental", "Medicine", "Feminine Care", "First Aid"] },
-  essentials: { emoji: "🧳", items: ["Travel Docs", "Tech", "Snacks", "Books", "Accessories"] },
+  outfits:    { emoji: "🎨", items: ["Brushes", "Paint", "Canvas", "Pencils", "Markers", "Watercolours", "Sketchbooks"] },
+  beauty:     { emoji: "🧵", items: ["Yarn", "Fabric", "Beads", "Glue", "Scissors", "Ribbon", "Stamps", "Washi Tape"] },
+  toiletries: { emoji: "🖼️", items: ["Works-in-progress", "Completed Pieces", "Sketches", "Patterns", "Templates"] },
+  essentials: { emoji: "🗃️", items: ["Boxes", "Bins", "Organisers", "Labels", "Jars", "Containers", "Trays"] },
 };
 
 export function QuickAddSheet({ open, onOpenChange, category, existingCount, onCreated }: Props) {
