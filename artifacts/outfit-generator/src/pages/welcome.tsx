@@ -176,14 +176,14 @@ export default function WelcomePage({ onEnter }: Props) {
       >
         <div style={{ textAlign: "center", marginBottom: vh * 0.044 }}>
           <div style={{
-            fontFamily: "'Dancing Script', cursive",
-            fontWeight: 700,
-            fontSize: `clamp(38px, ${vw * 0.155}px, 70px)`,
-            lineHeight: 1.15,
-            color: "#F5F0E8",
-            textShadow: "0 2px 12px rgba(0,0,0,0.25)",
+            fontFamily: "var(--font-display, serif)",
+            fontWeight: 900,
+            fontSize: `clamp(28px, ${vw * 0.115}px, 52px)`,
+            letterSpacing: "-0.02em",
+            lineHeight: 1.1,
+            color: "#EDD9B4",
           }}>
-            My Digital<br />Crafts
+            MY DIGITAL<br />CRAFTS
           </div>
           <div style={{
             marginTop: 10,
