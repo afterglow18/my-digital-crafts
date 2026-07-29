@@ -170,7 +170,7 @@ export default function WelcomePage({ onEnter }: Props) {
           alignItems: "center", justifyContent: "center",
           zIndex: 4,
           pointerEvents: phase === "idle" ? "auto" : "none",
-          paddingTop: 0,
+          paddingTop: "env(safe-area-inset-top, 0px)",
           marginTop: -vh * 0.12,
         }}
       >
