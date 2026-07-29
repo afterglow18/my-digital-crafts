@@ -81,6 +81,13 @@ const ROWS: { key: RowKey }[] = [
   { key: "essentials" },
 ];
 
+const CATEGORY_LABELS: Record<RowKey, string> = {
+  outfits:    "Art Supplies",
+  beauty:     "Craft Supplies",
+  toiletries: "Projects",
+  essentials: "Storage & Org",
+};
+
 const MIN_SPIN_MS = 1600;
 
 // ── Page ──────────────────────────────────────────────────────────────────────
@@ -312,7 +319,7 @@ export default function GeneratePage() {
               const btnCY  = pY(ir, lm.btnCY);
               const btnH   = Math.max(32, pH(ir, 0.045));
 
-              const label = key.toUpperCase();
+              const label = CATEGORY_LABELS[key].toUpperCase();
               const labelY = pY(ir, lm.btnCY + (lm.sectionTop - lm.btnCY) * 0.08);
 
               return (

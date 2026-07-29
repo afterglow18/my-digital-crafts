@@ -33,10 +33,10 @@ import {
 type Category = "outfits" | "beauty" | "toiletries" | "essentials";
 
 const CATEGORY_LABELS: Record<Category, string> = {
-  outfits:    "Outfits",
-  beauty:     "Beauty",
-  toiletries: "Toiletries",
-  essentials: "Essentials",
+  outfits:    "Art Supplies",
+  beauty:     "Craft Supplies",
+  toiletries: "Projects",
+  essentials: "Storage & Org",
 };
 
 // Per spec: do NOT wrap phase blocks in AnimatePresence — use plain conditional divs.
