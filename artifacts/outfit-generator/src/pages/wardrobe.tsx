@@ -54,20 +54,19 @@ const IMG_W = 1024;
 const IMG_H = 1536;
 const NAV_H = 90;
 
-// ── Landmark fractions (calibrated for suitcase-open-bg.jpg 989×1536) ─────────
-// Real-photo suitcase, shot from above.
-// Lid interior:  y ≈ 0.05 → 0.38   (rows 1 & 2)
-// Main body:     y ≈ 0.42 → 0.80   (rows 3 & 4)
-// doorL/doorR:   left/right inner walls of the suitcase interior
+// ── Landmark fractions (calibrated for crafts-bg.png easel canvas) ───────────
+// Blank canvas on easel. Canvas content runs ~y=0.13 → 0.80 (above toolbar).
+// 4 zones of equal height (~0.167 each), heading at zone top, photos below.
+// doorL/doorR:  left/right edges of the canvas face.
 const LM = {
-  doorL: 0.182,  // inner left wall
-  doorR: 0.776,  // inner right wall
+  doorL: 0.182,
+  doorR: 0.776,
 
   rows: [
-    { sectionTop: 0.170, shelfY: 0.265, btnCY: 0.150 },  // OUTFITS  (lid, upper)
-    { sectionTop: 0.305, shelfY: 0.400, btnCY: 0.285 },  // BEAUTY   (lid, lower)
-    { sectionTop: 0.505, shelfY: 0.618, btnCY: 0.485 },  // TOILETRIES (body, upper)
-    { sectionTop: 0.660, shelfY: 0.770, btnCY: 0.640 },  // ESSENTIALS (body, lower)
+    { sectionTop: 0.160, shelfY: 0.278, btnCY: 0.140 },  // ART SUPPLIES
+    { sectionTop: 0.328, shelfY: 0.445, btnCY: 0.308 },  // CRAFT SUPPLIES
+    { sectionTop: 0.495, shelfY: 0.612, btnCY: 0.475 },  // PROJECTS
+    { sectionTop: 0.662, shelfY: 0.780, btnCY: 0.642 },  // STORAGE & ORG
   ],
 
   saveAreaY: 0.84,

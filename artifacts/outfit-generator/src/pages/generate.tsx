@@ -32,10 +32,10 @@ const LM = {
   doorL: 0.182,
   doorR: 0.776,
   rows: [
-    { sectionTop: 0.170, shelfY: 0.265, btnCY: 0.150 },  // OUTFITS  (lid, upper)
-    { sectionTop: 0.305, shelfY: 0.400, btnCY: 0.285 },  // BEAUTY   (lid, lower)
-    { sectionTop: 0.505, shelfY: 0.618, btnCY: 0.485 },  // TOILETRIES (body, upper)
-    { sectionTop: 0.660, shelfY: 0.770, btnCY: 0.640 },  // ESSENTIALS (body, lower)
+    { sectionTop: 0.160, shelfY: 0.278, btnCY: 0.140 },  // ART SUPPLIES
+    { sectionTop: 0.328, shelfY: 0.445, btnCY: 0.308 },  // CRAFT SUPPLIES
+    { sectionTop: 0.495, shelfY: 0.612, btnCY: 0.475 },  // PROJECTS
+    { sectionTop: 0.662, shelfY: 0.780, btnCY: 0.642 },  // STORAGE & ORG
   ],
   // Action bar: from just below FRAGRANCES through the full bottom
   barY:   0.848,
