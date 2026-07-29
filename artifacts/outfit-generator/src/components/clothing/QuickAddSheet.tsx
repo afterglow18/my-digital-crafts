@@ -180,12 +180,39 @@ interface Props {
   onCreated?:    (item: import("@/lib/db").ClothingItem) => void;
 }
 
-const PHOTO_TIPS = [
+const GENERIC_PHOTO_TIPS = [
   "Photograph individual products or bundle multiple items together.",
   "Lay everything flat on a plain background.",
   "Take the photo from directly above.",
   "Keep all items fully in frame.",
-] as const;
+];
+
+const PHOTO_TIPS: Record<string, string[]> = {
+  outfits: [
+    "Spread tools out on a flat, neutral surface so each item is visible.",
+    "Use natural side-lighting to bring out bristle and pencil textures.",
+    "Group by type (e.g. all brushes together) for a tidy shot.",
+    "Include a ruler or your hand to show scale.",
+  ],
+  beauty: [
+    "Lay items flat on a plain fabric or craft mat.",
+    "Move in close to capture thread, bead, or paper textures.",
+    "Arrange by colour for a visually organised photo.",
+    "Show both packaged and open/in-use versions where possible.",
+  ],
+  toiletries: [
+    "Shoot at a slight angle to show layers, stitching, or depth.",
+    "Place a ruler or coin beside the piece to give a sense of scale.",
+    "Capture front and back if both sides have detail worth noting.",
+    "Use bright, even light to highlight fine details like stitching.",
+  ],
+  essentials: [
+    "Photograph from an angle to show depth and how much a container holds.",
+    "Open lids and boxes so the interior is visible.",
+    "Place a few items inside to give context for the container's size.",
+    "Make sure any labels are legible and face the camera.",
+  ],
+};
 
 const CATEGORY_EXAMPLES: Record<string, { emoji: string; items: string[] }> = {
   outfits:    { emoji: "🎨", items: ["Brushes", "Paint", "Canvas", "Pencils", "Markers", "Watercolours", "Sketchbooks"] },
@@ -489,7 +516,7 @@ export function QuickAddSheet({ open, onOpenChange, category, existingCount, onC
                 <span>📸</span> PHOTO TIPS
               </p>
               <ul className="flex flex-col gap-2">
-                {PHOTO_TIPS.map((tip) => (
+                {(PHOTO_TIPS[category] ?? GENERIC_PHOTO_TIPS).map((tip) => (
                   <li key={tip} className="flex items-start gap-2 text-sm text-black/70 leading-snug">
                     <span className="mt-0.5 w-4 h-4 border-2 border-black rounded-sm bg-primary
                                      flex items-center justify-center flex-shrink-0">
