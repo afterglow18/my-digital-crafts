@@ -1,6 +1,19 @@
 import React from "react";
 import { Link, useLocation } from "wouter";
-import { Shirt, Sparkles, Bookmark, Settings } from "lucide-react";
+import { Sparkles, Bookmark, Settings } from "lucide-react";
+
+function YarnIcon({ size = 24, className = "" }: { size?: number; className?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"
+      className={className}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M3.5 9c2.5 0 5 1.5 6 4s3.5 4 6.5 3.5" />
+      <path d="M3.5 15c2-.5 4-2 5-4.5S12 5.5 15 3.5" />
+      <path d="M14 20.5c.5-2.5-.5-5.5-2.5-7.5S6 9 5.5 6" />
+    </svg>
+  );
+}
 import { cn } from "@/lib/utils";
 import { useGetWardrobeStats } from "@/hooks/useLocalDB";
 
@@ -21,7 +34,7 @@ export function AppLayout({ children }: AppLayoutProps) {
     : undefined;
 
   const navItems = [
-    { href: "/",         label: "Crafts",   icon: Shirt,    badge: wardrobeCount },
+    { href: "/",         label: "Crafts",   icon: YarnIcon, badge: wardrobeCount },
     { href: "/generate", label: "Generate", icon: Sparkles  },
     { href: "/saved",    label: "Saved",    icon: Bookmark  },
     { href: "/account",  label: "Settings", icon: Settings  },
