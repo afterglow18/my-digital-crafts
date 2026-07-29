@@ -12,6 +12,7 @@
 import React, {
   useCallback, useEffect, useRef, useState, RefObject,
 } from "react";
+import { useCategoryNames, type CategoryKey } from "@/contexts/CategoryNamesContext";
 import {
   useListClothing, getListClothingQueryKey,
   useGenerateOutfit, useSaveOutfit, getListOutfitsQueryKey,
@@ -81,12 +82,6 @@ const ROWS: { key: RowKey }[] = [
   { key: "essentials" },
 ];
 
-const CATEGORY_LABELS: Record<RowKey, string> = {
-  outfits:    "Art Supplies",
-  beauty:     "Craft Supplies",
-  toiletries: "Projects",
-  essentials: "Storage",
-};
 
 const MIN_SPIN_MS = 1600;
 
@@ -103,10 +98,13 @@ export default function GeneratePage() {
     essentials: useRef<ClosetRowHandle | null>(null),
   };
 
+  const { names, updateName } = useCategoryNames();
   const [phase,      setPhase]      = useState<Phase>("idle");
   const [centred,    setCentred]    = useState<Partial<Record<RowKey, ClothingItem>>>({});
   const [isSaveOpen, setIsSaveOpen] = useState(false);
   const [saveName,   setSaveName]   = useState("");
+  const [editingKey, setEditingKey] = useState<string | null>(null);
+  const [editDraft,  setEditDraft]  = useState("");
 
   const rowDataRef = useRef<Record<RowKey, ClothingItem[]>>({
     outfits: [], beauty: [], toiletries: [], essentials: [],
@@ -319,13 +317,13 @@ export default function GeneratePage() {
               const btnCY  = pY(ir, lm.btnCY);
               const btnH   = Math.max(32, pH(ir, 0.045));
 
-              const label = CATEGORY_LABELS[key].toUpperCase();
+              const label = names[key as CategoryKey].toUpperCase();
               const labelY = pY(ir, lm.btnCY + (lm.sectionTop - lm.btnCY) * 0.08);
 
               return (
                 <React.Fragment key={key}>
 
-                  {/* ── Category label ── */}
+                  {/* ── Category label (tap to rename) ── */}
                   <div style={{
                     position: "absolute",
                     top: labelY,
@@ -334,24 +332,58 @@ export default function GeneratePage() {
                     transform: "translateY(-50%)",
                     zIndex: 12,
                     textAlign: "center",
-                    pointerEvents: "none",
+                    pointerEvents: "auto",
                   }}>
-                    <span style={{
-                      display: "inline-block",
-                      background: "rgba(140, 79, 72, 0.88)",
-                      color: "#F5E8D8",
-                      borderRadius: 20,
-                      padding: `2px 12px`,
-                      fontSize: Math.max(9, pH(ir, 0.012)),
-                      fontWeight: 800,
-                      letterSpacing: "0.12em",
-                      fontFamily: "var(--font-display)",
-                      textTransform: "uppercase",
-                      boxShadow: "0 1px 5px rgba(0,0,0,0.22)",
-                      border: "1px solid rgba(237,217,180,0.18)",
-                    }}>
-                      {label}
-                    </span>
+                    {editingKey === key ? (
+                      <input
+                        autoFocus
+                        value={editDraft}
+                        onChange={e => setEditDraft(e.target.value)}
+                        onBlur={() => { updateName(key as CategoryKey, editDraft); setEditingKey(null); }}
+                        onKeyDown={e => {
+                          if (e.key === "Enter")  { updateName(key as CategoryKey, editDraft); setEditingKey(null); }
+                          if (e.key === "Escape") { setEditingKey(null); }
+                        }}
+                        style={{
+                          background: "rgba(255,255,255,0.97)",
+                          border: "2px solid #8C4F48",
+                          borderRadius: 20,
+                          padding: "2px 14px",
+                          fontSize: Math.max(9, pH(ir, 0.012)),
+                          fontWeight: 800,
+                          letterSpacing: "0.08em",
+                          fontFamily: "var(--font-display)",
+                          textTransform: "uppercase",
+                          color: "#8C4F48",
+                          outline: "none",
+                          textAlign: "center",
+                          width: "82%",
+                        }}
+                      />
+                    ) : (
+                      <button
+                        onClick={() => { setEditingKey(key); setEditDraft(names[key as CategoryKey]); }}
+                        style={{ background: "none", border: "none", padding: 0, cursor: "text" }}
+                      >
+                        <span style={{
+                          display: "inline-flex", alignItems: "center", gap: 4,
+                          background: "rgba(140, 79, 72, 0.88)",
+                          color: "#F5E8D8",
+                          borderRadius: 20,
+                          padding: `2px 10px 2px 12px`,
+                          fontSize: Math.max(9, pH(ir, 0.012)),
+                          fontWeight: 800,
+                          letterSpacing: "0.12em",
+                          fontFamily: "var(--font-display)",
+                          textTransform: "uppercase",
+                          boxShadow: "0 1px 5px rgba(0,0,0,0.22)",
+                          border: "1px solid rgba(237,217,180,0.18)",
+                        }}>
+                          {label}
+                          <span style={{ fontSize: Math.max(7, pH(ir, 0.009)), opacity: 0.7, letterSpacing: 0 }}>✏</span>
+                        </span>
+                      </button>
+                    )}
                   </div>
 
                   {items.length > 0 ? (

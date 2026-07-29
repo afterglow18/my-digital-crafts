@@ -8,6 +8,7 @@
  *   pick ──(files chosen)──► uploading ──► close  (BG removal skipped for batch)
  */
 import React, { useRef, useState, useCallback } from "react";
+import { useCategoryNames, type CategoryKey } from "@/contexts/CategoryNamesContext";
 import { motion } from "framer-motion";
 import {
   X,
@@ -32,12 +33,6 @@ import {
 
 type Category = "outfits" | "beauty" | "toiletries" | "essentials";
 
-const CATEGORY_LABELS: Record<Category, string> = {
-  outfits:    "Art Supplies",
-  beauty:     "Craft Supplies",
-  toiletries: "Projects",
-  essentials: "Storage",
-};
 
 // Per spec: do NOT wrap phase blocks in AnimatePresence — use plain conditional divs.
 type Phase = "pick" | "encoding" | "preview" | "uploading";
@@ -222,6 +217,7 @@ const CATEGORY_EXAMPLES: Record<string, { emoji: string; items: string[] }> = {
 };
 
 export function QuickAddSheet({ open, onOpenChange, category, existingCount, onCreated }: Props) {
+  const { names: categoryNames } = useCategoryNames();
   // ── Phase & error ───────────────────────────────────────────────────────────
   const [phase,    setPhase]   = useState<Phase>("pick");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -330,7 +326,7 @@ export function QuickAddSheet({ open, onOpenChange, category, existingCount, onC
     setPhase("uploading");
     try {
       const dataUrl  = await blobToIndexedDbDataUrl(blob);
-      const label    = CATEGORY_LABELS[category];
+      const label    = categoryNames[category as CategoryKey];
       const autoName = existingCount === 0 ? label : `${label} ${existingCount + 1}`;
       await new Promise<void>((resolve, reject) => {
         createItem.mutate(
@@ -363,7 +359,7 @@ export function QuickAddSheet({ open, onOpenChange, category, existingCount, onC
     }
     try {
       const dataUrl  = await blobToJpegDataUrl(png);
-      const label    = CATEGORY_LABELS[category];
+      const label    = categoryNames[category as CategoryKey];
       const n        = itemIndex + 1;
       const autoName = n === 1 ? label : `${label} ${n}`;
       await new Promise<void>((resolve, reject) => {
@@ -424,7 +420,7 @@ export function QuickAddSheet({ open, onOpenChange, category, existingCount, onC
 
   if (!open) return null;
 
-  const label = CATEGORY_LABELS[category];
+  const label = categoryNames[category as CategoryKey];
 
   return (
     <motion.div

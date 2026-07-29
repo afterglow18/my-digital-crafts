@@ -11,6 +11,7 @@ import WelcomePage from './pages/welcome';
 import { SubscriptionProvider, initializeRevenueCat } from '@/lib/revenuecat';
 import { queryClient } from '@/lib/queryClient';
 import { BiometricLockProvider } from '@/context/BiometricLockContext';
+import { CategoryNamesProvider } from '@/contexts/CategoryNamesContext';
 
 // ── Initialise RevenueCat once at startup ────────────────────────────────────
 try {
@@ -81,7 +82,9 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <SubscriptionProvider>
         <BiometricLockProvider>
-          <AppShell />
+          <CategoryNamesProvider>
+            <AppShell />
+          </CategoryNamesProvider>
         </BiometricLockProvider>
       </SubscriptionProvider>
     </QueryClientProvider>

@@ -17,16 +17,11 @@ import { UpgradeSheet } from "@/components/paywall/UpgradeSheet";
 import { FREE_OUTFIT_LIMIT } from "@/lib/entitlements";
 import { WardrobePickerSheet } from "@/components/clothing/WardrobePickerSheet";
 import { ItemDetailsSheet } from "@/components/clothing/ItemDetailsSheet";
+import { useCategoryNames, type CategoryKey } from "@/contexts/CategoryNamesContext";
 
 const SLOT_ORDER = ["outfits", "beauty", "toiletries", "essentials"] as const;
 type SlotKey = (typeof SLOT_ORDER)[number];
 
-const SLOT_LABELS: Record<SlotKey, string> = {
-  outfits:    "Art Supplies",
-  beauty:     "Craft Supplies",
-  toiletries: "Projects",
-  essentials: "Storage",
-};
 
 function ItemPhoto({
   item,
@@ -64,6 +59,7 @@ function ItemPhoto({
 }
 
 export default function SavedPage() {
+  const { names } = useCategoryNames();
   const { data: outfits, isLoading } = useListOutfits();
   const deleteOutfit = useDeleteOutfit();
   const renameOutfit = useRenameOutfit();
@@ -326,7 +322,7 @@ export default function SavedPage() {
                               <ItemPhoto item={item} size="lg" onClick={() => setDetailsItem(item)} />
                               <div className="flex items-center justify-between px-0.5">
                                 <span className="text-[8px] font-bold uppercase text-muted-foreground truncate">
-                                  {SLOT_LABELS[slot]}
+                                  {names[slot as CategoryKey]}
                                 </span>
                                 <button
                                   onClick={() => handleRemoveItem(outfit.id, item.id)}
@@ -345,7 +341,7 @@ export default function SavedPage() {
                                 <Plus className="w-3.5 h-3.5 text-black/30" />
                               </button>
                               <span className="text-[8px] font-bold uppercase text-black/25 text-center truncate">
-                                {SLOT_LABELS[slot]}
+                                {names[slot as CategoryKey]}
                               </span>
                             </>
                           )}

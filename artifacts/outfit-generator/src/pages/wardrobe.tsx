@@ -37,16 +37,17 @@ import { UpgradeSheet, UpgradeReason } from "@/components/paywall/UpgradeSheet";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEntitlements } from "@/hooks/useEntitlements";
 import { FREE_ITEM_LIMIT } from "@/lib/entitlements";
+import { useCategoryNames, type CategoryKey } from "@/contexts/CategoryNamesContext";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type RowKey   = "outfits" | "beauty" | "toiletries" | "essentials";
 type Category = "outfits" | "beauty" | "toiletries" | "essentials";
 
-const ROWS: { key: RowKey; btnLabel: string }[] = [
-  { key: "outfits",    btnLabel: "+ ART SUPPLIES"         },
-  { key: "beauty",     btnLabel: "+ CRAFT SUPPLIES"       },
-  { key: "toiletries", btnLabel: "+ ADD PROJECTS"        },
-  { key: "essentials", btnLabel: "+ ADD STORAGE"         },
+const ROWS: { key: RowKey }[] = [
+  { key: "outfits"    },
+  { key: "beauty"     },
+  { key: "toiletries" },
+  { key: "essentials" },
 ];
 
 // ── Image constants ───────────────────────────────────────────────────────────
@@ -104,6 +105,7 @@ const pY = (ir: ImgRect, f: number) => ir.top    + ir.height * f;
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function WardrobePage() {
+  const { names } = useCategoryNames();
   const containerRef = useRef<HTMLDivElement>(null!);
   const ir = useImageRect(containerRef);
 
@@ -281,7 +283,8 @@ export default function WardrobePage() {
           )}
 
           {/* ── 4 shelf rows ── */}
-          {ROWS.map(({ key, btnLabel }, rowIdx) => {
+          {ROWS.map(({ key }, rowIdx) => {
+            const btnLabel = `+ ${names[key as CategoryKey].toUpperCase()}`;
             const lm      = LM.rows[rowIdx];
             const items   = rowData[key];
 

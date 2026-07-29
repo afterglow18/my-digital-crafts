@@ -7,6 +7,7 @@
  * comparison overlay triggered by "Clean Up Photo".
  */
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useCategoryNames } from "@/contexts/CategoryNamesContext";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   X, Heart, Trash2, Save, ChevronDown, Sparkles, Check, Loader2,
@@ -33,12 +34,6 @@ import {
 const SEASON_OPTIONS    = ["", "Spring", "Summer", "Fall", "Winter", "All Season"];
 const OCCASION_OPTIONS  = ["", "Casual", "Work", "Formal", "Sport", "Special Event"];
 const CATEGORY_OPTIONS  = ["outfits", "beauty", "toiletries", "essentials"];
-const CATEGORY_DISPLAY: Record<string, string> = {
-  outfits:    "Art Supplies",
-  beauty:     "Craft Supplies",
-  toiletries: "Projects",
-  essentials: "Storage",
-};
 
 function Field({
   label,
@@ -392,6 +387,7 @@ function isDirty(form: FormState, item: ClothingItem): boolean {
 }
 
 export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetProps) {
+  const { names: categoryNames } = useCategoryNames();
   const [form,              setForm]              = useState<FormState | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showCleanup,       setShowCleanup]       = useState(false);
@@ -634,7 +630,7 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
               value={form.category}
               onChange={patch("category") as (v: string) => void}
               options={CATEGORY_OPTIONS}
-              displayMap={CATEGORY_DISPLAY}
+              displayMap={categoryNames}
             />
             <div className="flex flex-col gap-1 opacity-50 pointer-events-none">
               <span className="text-[10px] font-bold uppercase tracking-widest text-[#6B3838]/55">Times Worn</span>
