@@ -476,7 +476,7 @@ export default function WardrobePage() {
               ) : (
                 <>
                   <p style={{ fontWeight: 800, fontSize: 15, fontFamily: "var(--font-display)", marginBottom: 12 }}>
-                    Name this case
+                    Name this craft
                   </p>
                   <input
                     autoFocus
