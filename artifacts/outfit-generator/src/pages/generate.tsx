@@ -481,13 +481,14 @@ export default function GeneratePage() {
               style={{
                 position: "absolute",
                 top:    pY(ir, LM.barY),
-                left:   pX(ir, LM.doorL),
-                width:  pW(ir, LM.doorR - LM.doorL),
+                left:   0,
+                width:  "100%",
                 height: pH(ir, LM.barBot - LM.barY),
                 zIndex: 22,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
+                padding: "0 20px",
               }}
             >
               <AnimatePresence mode="wait">
@@ -570,20 +571,20 @@ export default function GeneratePage() {
                     <button
                       onClick={handleRespin}
                       style={{
-                        flexGrow: 3, flexShrink: 1, flexBasis: "0%", minWidth: 0,
+                        flexGrow: 1, flexShrink: 1, flexBasis: "0%", minWidth: 0,
                         height: 54, borderRadius: 28,
                         border: "2.5px solid #8C4F48",
                         background: "#8C4F48",
                         color: "#F5F0E8",
                         fontFamily: "var(--font-display)",
-                        fontWeight: 800, fontSize: 12,
+                        fontWeight: 800, fontSize: 13,
                         letterSpacing: "0em", textTransform: "uppercase",
                         whiteSpace: "nowrap",
                         boxShadow: "2px 2px 0 rgba(0,0,0,0.85)",
                         cursor: "pointer",
                         display: "flex", flexDirection: "row",
                         alignItems: "center", justifyContent: "center",
-                        gap: 4, padding: "0 10px",
+                        gap: 4, padding: "0 8px",
                       }}
                     >
                       <span>ReCreate</span>
@@ -594,13 +595,13 @@ export default function GeneratePage() {
                       onClick={() => setIsSaveOpen(true)}
                       disabled={!canSave}
                       style={{
-                        flexGrow: 2, flexShrink: 1, flexBasis: "0%", minWidth: 0,
+                        flexGrow: 1, flexShrink: 1, flexBasis: "0%", minWidth: 0,
                         height: 54, borderRadius: 28,
                         border: "2.5px solid #8C4F48",
                         background: canSave ? "#fff" : "rgba(240,240,240,0.80)",
                         color: "#3A2210",
                         fontFamily: "var(--font-display)",
-                        fontWeight: 800, fontSize: 14,
+                        fontWeight: 800, fontSize: 13,
                         letterSpacing: "-0.01em", textTransform: "uppercase",
                         whiteSpace: "nowrap",
                         boxShadow: canSave ? "2px 2px 0 rgba(0,0,0,0.85)" : "none",
