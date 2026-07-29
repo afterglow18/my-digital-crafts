@@ -38,14 +38,29 @@ async function configureOrt(): Promise<void> {
  * Returns a PNG data-URL with transparent background.
  * On first ever call downloads ~15 MB ONNX model from imgly CDN (cached after that).
  * Throws on network error or unreadable image — callers should catch and fall back.
+ *
+ * @param onProgress  Optional callback fired during model download.
+ *   Receives a percentage 0–100.  Values < 100 indicate download progress;
+ *   100 means the download is complete and inference has started.
+ *   Not called on subsequent runs when the browser has cached the model.
  */
-export async function removeBackground(dataUrl: string): Promise<string> {
+export async function removeBackground(
+  dataUrl: string,
+  onProgress?: (pct: number) => void,
+): Promise<string> {
   await configureOrt();
   const sourceBlob = await dataUrlToBlob(dataUrl);
   const resultBlob = await imglyRemoveBackground(sourceBlob, {
     model: "isnet_fp16", // valid: "isnet" | "isnet_fp16" | "isnet_quint8" — NOT "small"/"medium"
     output: { format: "image/png", quality: 0.9 },
     // publicPath omitted → uses static imgly CDN automatically
+    ...(onProgress && {
+      progress: (_key: string, current: number, total: number) => {
+        if (total > 0) {
+          onProgress(Math.round((current / total) * 100));
+        }
+      },
+    }),
   });
   return blobToDataUrl(resultBlob);
 }

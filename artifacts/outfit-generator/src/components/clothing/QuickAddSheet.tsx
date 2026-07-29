@@ -208,6 +208,8 @@ export function QuickAddSheet({ open, onOpenChange, category, existingCount, onC
   const [bgProcessing, setBgProcessing] = useState(false);
   const [bgFailed,     setBgFailed]     = useState(false);
   const [selected,     setSelected]     = useState<"original" | "cleaned">("original");
+  // null = no active download (model cached or inference running); 0–99 = download percent
+  const [bgModelPct,   setBgModelPct]   = useState<number | null>(null);
 
   // Each photo bumps this counter. Every async step checks it before writing
   // state — prevents a slow first photo from clobbering a fast second one.
@@ -231,6 +233,7 @@ export function QuickAddSheet({ open, onOpenChange, category, existingCount, onC
     setCleanedUrl(null);
     setBgFailed(false);
     setSelected("original");
+    setBgModelPct(null);
     setProgress(null);
     onOpenChange(false);
   }, [onOpenChange]);
@@ -245,6 +248,7 @@ export function QuickAddSheet({ open, onOpenChange, category, existingCount, onC
     setCleanedUrl(null);
     setBgFailed(false);
     setBgProcessing(false);
+    setBgModelPct(null);
     setSelected("original");
     // Switch to encoding phase BEFORE any async work so the user sees a spinner
     // immediately instead of a blank pick screen for 1-3 s.
@@ -271,7 +275,11 @@ export function QuickAddSheet({ open, onOpenChange, category, existingCount, onC
     try {
       const dataUrl = await bgBlobToDataUrl(jpeg);
       if (bgGenRef.current !== myGen) return;
-      const resultUrl = await removeBackground(dataUrl);
+      const resultUrl = await removeBackground(dataUrl, (pct) => {
+        if (bgGenRef.current !== myGen) return;
+        // pct 0–99 = downloading; 100 = download complete, inference running
+        setBgModelPct(pct < 100 ? pct : null);
+      });
       if (bgGenRef.current !== myGen) return;
       const resultBlob   = await dataUrlToBlob(resultUrl);
       const resultObjUrl = URL.createObjectURL(resultBlob);
@@ -523,7 +531,9 @@ export function QuickAddSheet({ open, onOpenChange, category, existingCount, onC
             {/* Hint text */}
             <p className="text-center font-display font-bold text-[11px] uppercase tracking-widest text-black/40">
               {bgProcessing
-                ? "This will take a moment…"
+                ? bgModelPct !== null
+                  ? `Downloading model… ${bgModelPct}%`
+                  : "Processing…"
                 : bgFailed
                 ? "Background removal unavailable"
                 : "Tap to choose"}
@@ -611,7 +621,22 @@ export function QuickAddSheet({ open, onOpenChange, category, existingCount, onC
                                   text-black/35 text-center px-3 py-8">
                       Could not remove background
                     </p>
+                  ) : bgModelPct !== null ? (
+                    /* First-run: model download in progress */
+                    <div className="flex flex-col items-center gap-3 py-8 px-4 w-full">
+                      <p className="font-display font-bold text-[11px] uppercase tracking-widest text-black/40">
+                        Downloading model… {bgModelPct}%
+                      </p>
+                      <div className="w-full h-2 rounded-full overflow-hidden"
+                           style={{ background: "rgba(0,0,0,0.12)" }}>
+                        <div
+                          className="h-full rounded-full transition-all duration-300"
+                          style={{ width: `${bgModelPct}%`, background: "rgba(0,0,0,0.5)" }}
+                        />
+                      </div>
+                    </div>
                   ) : (
+                    /* Cached model: just show spinner */
                     <div className="flex flex-col items-center gap-2 py-8">
                       <Loader2 className="w-8 h-8 animate-spin text-black/40" />
                       <p className="font-display font-bold text-[11px] uppercase tracking-widest text-black/40">
