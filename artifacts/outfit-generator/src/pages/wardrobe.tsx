@@ -233,7 +233,7 @@ export default function WardrobePage() {
           {/* ── Page title ── */}
           <div style={{
             position: "absolute",
-            top: pY(ir, 0.090),
+            top: pY(ir, 0.048),
             left: 8,
             right: 8,
             zIndex: 25,
@@ -242,16 +242,14 @@ export default function WardrobePage() {
             overflow: "hidden",
           }}>
             <div style={{
-              fontFamily: "var(--font-display, serif)",
-              fontWeight: 900,
-              fontSize: Math.max(8, Math.min(pW(ir, 0.030), ir.containerW * 0.040)),
-              letterSpacing: "0.08em",
-              whiteSpace: "nowrap",
-              textTransform: "uppercase",
-              color: "#1a0800",
+              fontFamily: "'Dancing Script', cursive",
+              fontWeight: 700,
+              fontSize: Math.max(16, Math.min(pW(ir, 0.075), ir.containerW * 0.095)),
+              color: "#F5F0E8",
               lineHeight: 1.1,
+              textShadow: "0 1px 8px rgba(0,0,0,0.18)",
             }}>
-              MY DIGITAL CRAFTS
+              My Digital Crafts
             </div>
           </div>
 
