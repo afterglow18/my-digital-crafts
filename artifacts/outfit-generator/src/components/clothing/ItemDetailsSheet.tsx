@@ -99,7 +99,7 @@ function SelectField({
         >
           {options.map((o) => (
             <option key={o} value={o}>
-              {displayMap?.[o] ?? o || `— ${label} —`}
+              {(displayMap?.[o] ?? o) || `— ${label} —`}
             </option>
           ))}
         </select>
