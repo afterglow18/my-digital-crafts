@@ -576,18 +576,18 @@ export default function GeneratePage() {
                         background: "#8C4F48",
                         color: "#F5F0E8",
                         fontFamily: "var(--font-display)",
-                        fontWeight: 800, fontSize: 14,
-                        letterSpacing: "-0.01em", textTransform: "uppercase",
+                        fontWeight: 800, fontSize: 12,
+                        letterSpacing: "0em", textTransform: "uppercase",
                         whiteSpace: "nowrap",
                         boxShadow: "2px 2px 0 rgba(0,0,0,0.85)",
                         cursor: "pointer",
-                        display: "flex", flexDirection: "column",
+                        display: "flex", flexDirection: "row",
                         alignItems: "center", justifyContent: "center",
-                        gap: 2, padding: "0 12px",
+                        gap: 4, padding: "0 10px",
                       }}
                     >
                       <span>ReCreate</span>
-                      <span style={{ fontSize: 14, lineHeight: 1 }}>✨</span>
+                      <span style={{ fontSize: 12, lineHeight: 1 }}>✨</span>
                     </button>
 
                     <button
