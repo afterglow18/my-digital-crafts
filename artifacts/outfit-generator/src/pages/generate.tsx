@@ -563,14 +563,14 @@ export default function GeneratePage() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 8 }}
                     style={{
-                      display: "flex", gap: 18, justifyContent: "center",
+                      display: "flex", gap: 10, justifyContent: "center",
                       width: "100%",
                     }}
                   >
                     <button
                       onClick={handleRespin}
                       style={{
-                        flexGrow: 1, flexShrink: 1, flexBasis: "0%", minWidth: 0,
+                        flexGrow: 3, flexShrink: 1, flexBasis: "0%", minWidth: 0,
                         height: 54, borderRadius: 28,
                         border: "2.5px solid #8C4F48",
                         background: "#8C4F48",
@@ -594,7 +594,7 @@ export default function GeneratePage() {
                       onClick={() => setIsSaveOpen(true)}
                       disabled={!canSave}
                       style={{
-                        flexGrow: 1, flexShrink: 1, flexBasis: "0%", minWidth: 0,
+                        flexGrow: 2, flexShrink: 1, flexBasis: "0%", minWidth: 0,
                         height: 54, borderRadius: 28,
                         border: "2.5px solid #8C4F48",
                         background: canSave ? "#fff" : "rgba(240,240,240,0.80)",
