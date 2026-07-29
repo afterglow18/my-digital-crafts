@@ -26,7 +26,7 @@ import { useQueryClient } from "@tanstack/react-query";
 const IMG_W = 1024;
 const IMG_H = 1536;
 const NAV_H = 90;
-const PINK  = "#E8D4B0";
+const PINK  = "#8C4F48";
 
 const LM = {
   doorL: 0.182,
@@ -422,7 +422,7 @@ export default function GeneratePage() {
                     padding: "3px 11px", borderRadius: 20,
                     whiteSpace: "nowrap",
                   }}>
-                    Packing your crafts…
+                    Sorting Your Supplies…
                   </span>
                 </motion.div>
               )}
@@ -504,11 +504,11 @@ export default function GeneratePage() {
                     disabled={!hasItems}
                     style={{
                       width: "100%", height: 52, borderRadius: 28,
-                      border: "2.5px solid #B8894E",
+                      border: "2.5px solid #8C4F48",
                       background: hasItems
-                        ? "linear-gradient(to bottom, #E8D4B0, #B8894E)"
-                        : "rgba(200,175,140,0.32)",
-                      color: hasItems ? "#3A2210" : "#7A5A30",
+                        ? "#8C4F48"
+                        : "rgba(140,79,72,0.22)",
+                      color: hasItems ? "#F5F0E8" : "#8C4F48",
                       fontWeight: 800, fontSize: 16,
                       letterSpacing: "-0.01em", textTransform: "uppercase",
                       whiteSpace: "nowrap",
@@ -534,8 +534,8 @@ export default function GeneratePage() {
                       padding: "0 24px", height: 44,
                       alignItems: "center", justifyContent: "center",
                       borderRadius: 24,
-                      background: "rgba(240,225,196,0.85)",
-                      border: "1.5px solid rgba(180,140,90,0.28)",
+                      background: "rgba(140,79,72,0.12)",
+                      border: "1.5px solid rgba(140,79,72,0.30)",
                     }}
                   >
                     {[0, 1, 2].map(i => (
@@ -572,9 +572,9 @@ export default function GeneratePage() {
                       style={{
                         flexGrow: 1, flexShrink: 1, flexBasis: "0%", minWidth: 0,
                         height: 54, borderRadius: 28,
-                        border: "2.5px solid #B8894E",
-                        background: "linear-gradient(to bottom, #E8D4B0, #B8894E)",
-                        color: "#4A3A3A",
+                        border: "2.5px solid #8C4F48",
+                        background: "#8C4F48",
+                        color: "#F5F0E8",
                         fontFamily: "var(--font-display)",
                         fontWeight: 800, fontSize: 14,
                         letterSpacing: "-0.01em", textTransform: "uppercase",
@@ -586,7 +586,7 @@ export default function GeneratePage() {
                         gap: 2, padding: "0 12px",
                       }}
                     >
-                      <span>Repack</span>
+                      <span>ReCreate</span>
                       <span style={{ fontSize: 14, lineHeight: 1 }}>✨</span>
                     </button>
 
@@ -596,7 +596,7 @@ export default function GeneratePage() {
                       style={{
                         flexGrow: 1, flexShrink: 1, flexBasis: "0%", minWidth: 0,
                         height: 54, borderRadius: 28,
-                        border: "2.5px solid #B8894E",
+                        border: "2.5px solid #8C4F48",
                         background: canSave ? "#fff" : "rgba(240,240,240,0.80)",
                         color: "#3A2210",
                         fontFamily: "var(--font-display)",
@@ -659,8 +659,8 @@ export default function GeneratePage() {
                       disabled={!saveName.trim() || saveOutfit.isPending}
                       style={{
                         padding: "0 14px", height: 36, borderRadius: 20, flexShrink: 0,
-                        background: "linear-gradient(to bottom, #E8D4B0, #B8894E)",
-                        color: "#3A2210", fontWeight: 700, fontSize: 13, border: "1.5px solid #B8894E",
+                        background: "#8C4F48",
+                        color: "#F5F0E8", fontWeight: 700, fontSize: 13, border: "1.5px solid #8C4F48",
                         boxShadow: "0 3px 10px rgba(120,80,40,0.30)",
                         opacity: (!saveName.trim() || saveOutfit.isPending) ? 0.42 : 1,
                         cursor: "pointer",
