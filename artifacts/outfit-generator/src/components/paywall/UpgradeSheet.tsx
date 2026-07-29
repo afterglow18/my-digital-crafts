@@ -25,9 +25,9 @@ interface Props {
 // ── Copy ──────────────────────────────────────────────────────────────────────
 
 const FEATURES = [
-  "Unlimited clothing items",
-  "Unlimited saved outfits",
-  "Save your entire wardrobe",
+  "Unlimited craft items",
+  "Unlimited saved collections",
+  "Save your entire craft stash",
   "One-time payment options",
   "Choose monthly, yearly or lifetime!",
 ] as const;
@@ -39,8 +39,8 @@ const HEADLINES: Record<UpgradeReason, string> = {
 };
 
 const SUBTITLES: Record<UpgradeReason, string> = {
-  items:     "You've reached the free 20 item limit.\nUpgrade once, pack everything.",
-  outfits:   "You've hit the free outfit limit. Upgrade to save every look.",
+  items:     "You've reached the free 20 item limit.\nUpgrade once, store everything.",
+  outfits:   "You've hit the free limit. Upgrade to save every collection.",
   mannequin: "A premium feature — unlock it once.",
 };
 
@@ -211,19 +211,30 @@ export function UpgradeSheet({ reason, onClose }: Props) {
       className="fixed inset-0 z-[80] flex flex-col max-w-md mx-auto"
       style={{ background: "#F8F4ED" }}
     >
-      {/* Close button */}
-      <div className="flex justify-end px-4 pb-0 flex-shrink-0"
-        style={{ paddingTop: "max(1rem, env(safe-area-inset-top))" }}>
+      {/* Plaid header strip */}
+      <div style={{
+        flexShrink: 0,
+        height: `calc(max(1rem, env(safe-area-inset-top)) + 44px)`,
+        background: "#8C4F48",
+        backgroundImage: [
+          "repeating-linear-gradient(90deg,transparent,transparent 18px,rgba(255,255,255,0.10) 18px,rgba(255,255,255,0.10) 19px)",
+          "repeating-linear-gradient(0deg,transparent,transparent 18px,rgba(255,255,255,0.10) 18px,rgba(255,255,255,0.10) 19px)",
+          "repeating-linear-gradient(90deg,transparent,transparent 6px,rgba(0,0,0,0.07) 6px,rgba(0,0,0,0.07) 7px)",
+          "repeating-linear-gradient(0deg,transparent,transparent 6px,rgba(0,0,0,0.07) 6px,rgba(0,0,0,0.07) 7px)",
+        ].join(","),
+        position: "relative",
+      }}>
         <button
           onClick={onClose}
           aria-label="Close"
-          className="w-9 h-9 rounded-full border-2 border-black flex items-center justify-center
-                     bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]
-                     active:translate-y-0.5 active:translate-x-0.5 active:shadow-none transition-all"
+          className="absolute bottom-2 right-4 w-9 h-9 rounded-full border-2 border-white/60
+                     flex items-center justify-center bg-white/20
+                     active:bg-white/30 transition-all"
         >
-          <X className="w-4 h-4" />
+          <X className="w-4 h-4 text-white" />
         </button>
       </div>
+
 
       {/* Content — fills remaining height, no scroll */}
       <div className="flex-1 min-h-0 flex flex-col justify-between px-5 pt-3 pb-2">
@@ -247,10 +258,10 @@ export function UpgradeSheet({ reason, onClose }: Props) {
             </p>
             <p className="font-display font-bold uppercase text-[1.45rem] leading-[0.92] tracking-tight"
                style={{ color: "hsl(35 55% 82%)" }}>
-              Unlimited saved outfits
+              Unlimited collections
             </p>
             <p className="text-white/60 text-xs font-medium mt-1 leading-snug">
-              Your entire wardrobe, beautifully packed — forever.
+              Your entire craft stash, beautifully organised — forever.
             </p>
           </div>
         </div>
