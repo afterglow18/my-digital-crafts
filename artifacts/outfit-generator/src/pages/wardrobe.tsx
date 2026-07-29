@@ -263,7 +263,7 @@ export default function WardrobePage() {
                 position: "absolute",
                 top: `calc(${pY(ir, 0.096)}px + env(safe-area-inset-top, 0px))`, left: "50%", transform: "translateX(-50%)",
                 zIndex: 25,
-                padding: "3px 14px", borderRadius: 20, border: "none",
+                padding: "2px 8px", borderRadius: 20, border: "none",
                 background: totalItems >= FREE_ITEM_LIMIT
                   ? "rgba(200,40,40,0.14)"
                   : "rgba(255,255,255,0.55)",
@@ -271,7 +271,7 @@ export default function WardrobePage() {
                   ? "0 0 0 2px rgba(200,40,40,0.40)"
                   : "0 0 0 1.5px rgba(180,100,110,0.28)",
                 color: totalItems >= FREE_ITEM_LIMIT ? "#aa0000" : "#7a3a40",
-                fontWeight: 700, fontSize: 10,
+                fontWeight: 700, fontSize: 8,
                 letterSpacing: "0.08em", textTransform: "uppercase",
                 whiteSpace: "nowrap", cursor: "pointer",
               }}
