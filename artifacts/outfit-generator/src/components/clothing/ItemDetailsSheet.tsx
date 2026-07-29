@@ -37,7 +37,7 @@ const CATEGORY_DISPLAY: Record<string, string> = {
   outfits:    "Art Supplies",
   beauty:     "Craft Supplies",
   toiletries: "Projects",
-  essentials: "Storage & Organization",
+  essentials: "Storage",
 };
 
 function Field({

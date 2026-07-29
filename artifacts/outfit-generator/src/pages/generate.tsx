@@ -85,7 +85,7 @@ const CATEGORY_LABELS: Record<RowKey, string> = {
   outfits:    "Art Supplies",
   beauty:     "Craft Supplies",
   toiletries: "Projects",
-  essentials: "Storage & Org",
+  essentials: "Storage",
 };
 
 const MIN_SPIN_MS = 1600;

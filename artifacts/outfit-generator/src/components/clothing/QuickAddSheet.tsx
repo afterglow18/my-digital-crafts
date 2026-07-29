@@ -36,7 +36,7 @@ const CATEGORY_LABELS: Record<Category, string> = {
   outfits:    "Art Supplies",
   beauty:     "Craft Supplies",
   toiletries: "Projects",
-  essentials: "Storage & Org",
+  essentials: "Storage",
 };
 
 // Per spec: do NOT wrap phase blocks in AnimatePresence — use plain conditional divs.
