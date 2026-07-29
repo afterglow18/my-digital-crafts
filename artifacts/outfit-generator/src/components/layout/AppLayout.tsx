@@ -53,7 +53,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         </main>
 
         {/* Bottom Navigation — centred & capped on wide screens so items don't spread */}
-        <nav className="absolute bottom-0 left-0 right-0 border-t-[3px] border-black p-3 pb-safe z-[40]" style={{ background: "#DEC0A0" }}>
+        <nav className="absolute bottom-0 left-0 right-0 border-t-[3px] border-black p-3 pb-safe z-[40]" style={{ background: "#F5F0E8" }}>
           <ul className="flex items-center justify-around md:max-w-sm md:mx-auto lg:max-w-none">
             {navItems.map((item) => {
               const isActive = location === item.href;
