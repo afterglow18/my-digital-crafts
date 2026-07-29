@@ -299,7 +299,7 @@ export default function GeneratePage() {
                 letterSpacing: "0.10em",
                 whiteSpace: "nowrap",
                 textTransform: "uppercase",
-                color: "#F5F0E8",
+                color: "#8C4F48",
                 lineHeight: 1.2,
                 marginTop: 14,
                 textShadow: "0 1px 6px rgba(0,0,0,0.18)",
