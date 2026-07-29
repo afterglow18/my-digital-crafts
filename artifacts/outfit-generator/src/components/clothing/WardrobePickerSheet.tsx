@@ -21,10 +21,10 @@ import { QuickAddSheet } from "./QuickAddSheet";
 type Category = "outfits" | "beauty" | "toiletries" | "essentials";
 
 const CATEGORY_LABELS: Record<Category, string> = {
-  outfits:    "Outfits",
-  beauty:     "Beauty",
-  toiletries: "Toiletries",
-  essentials: "Essentials",
+  outfits:    "Art Supplies",
+  beauty:     "Craft Supplies",
+  toiletries: "Projects",
+  essentials: "Storage",
 };
 
 interface Props {
@@ -127,7 +127,7 @@ export function WardrobePickerSheet({ open, onOpenChange, category, onPick, exis
                       {alreadyIn && (
                         <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
                           <span className="text-white text-xs font-bold uppercase tracking-wide bg-black/60 px-1.5 py-0.5 rounded">
-                            In look
+                            In collection
                           </span>
                         </div>
                       )}

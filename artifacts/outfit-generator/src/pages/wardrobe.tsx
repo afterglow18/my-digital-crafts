@@ -393,7 +393,7 @@ export default function WardrobePage() {
           <button
             onClick={() => navigate("/favorites")}
             data-testid="button-person-icon"
-            aria-label="View saved looks"
+            aria-label="View saved collections"
             style={{
               position: "absolute",
               top:    pY(ir, 0.895),
@@ -427,7 +427,7 @@ export default function WardrobePage() {
           {/* ── SAVE tap target — transparent overlay on the baked-in image button ── */}
           <button
             onClick={() => { setSaveName(""); setIsSaveOpen(true); }}
-            aria-label="Save current case"
+            aria-label="Save current collection"
             style={{
               position: "absolute",
               top:    pY(ir, 0.9466) - pW(ir, 0.074),
@@ -474,7 +474,7 @@ export default function WardrobePage() {
               {saveSuccess ? (
                 <div style={{ textAlign: "center", padding: "12px 0" }}>
                   <div style={{ fontSize: 32, marginBottom: 8 }}>💕</div>
-                  <p style={{ fontWeight: 800, fontSize: 16, fontFamily: "var(--font-display)" }}>Case saved!</p>
+                  <p style={{ fontWeight: 800, fontSize: 16, fontFamily: "var(--font-display)" }}>Collection saved!</p>
                 </div>
               ) : (
                 <>

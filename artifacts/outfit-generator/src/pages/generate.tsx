@@ -486,7 +486,7 @@ export default function GeneratePage() {
                   fontSize: 11, color: "#9a5060",
                   marginTop: 5, lineHeight: 1.5,
                 }}>
-                  Add outfits, beauty, toiletries or essentials in the Crafts tab first.
+                  Add art supplies, craft supplies, projects or storage in the Crafts tab first.
                 </p>
               </div>
             )}
@@ -551,7 +551,7 @@ export default function GeneratePage() {
                       display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
                     }}
                   >
-                    ✨ Spin It!
+                    ✨ Mix It!
                   </motion.button>
                 )}
 
