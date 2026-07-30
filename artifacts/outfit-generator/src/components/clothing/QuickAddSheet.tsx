@@ -722,7 +722,6 @@ export function QuickAddSheet({ open, onOpenChange, category, existingCount, onC
         ref={cameraInputRef}
         type="file"
         accept="image/*"
-        capture="environment"
         onChange={handleCameraChange}
         style={{ position: "absolute", opacity: 0, pointerEvents: "none", width: 0, height: 0, overflow: "hidden" }}
         tabIndex={-1}
