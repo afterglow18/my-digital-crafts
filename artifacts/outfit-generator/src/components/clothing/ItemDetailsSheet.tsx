@@ -592,9 +592,9 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
           </div>
         </div>
 
-        {/* ── Photo + Clean Up button ── */}
+        {/* ── Photo ── */}
         {displayedImageUrl && (
-          <div className="flex-shrink-0 relative">
+          <div className="flex-shrink-0">
             <div
               className="w-full h-52 border-b-2 border-black"
               style={{
@@ -608,27 +608,17 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
                 className="w-full h-full object-contain"
               />
             </div>
-            {/* Clean Up Photo button — hidden once the stored image is already a
-                cleaned PNG (data:image/png = background-removed version). */}
-            {!displayedImageUrl.startsWith("data:image/png") && <button
-              onClick={() => setShowCleanup(true)}
-              className="absolute bottom-3 right-3 flex items-center gap-1.5
-                         px-3 py-1.5 rounded-lg
-                         border-2 border-[#8C4F48]/50 bg-[#EDD9B4] text-[#3A2210]
-                         font-display font-bold text-[11px] uppercase tracking-widest
-                         shadow-[2px_2px_0px_0px_rgba(139,94,60,0.3)]
-                         active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all"
-            >
-              <Sparkles className="w-3.5 h-3.5" />
-              Clean Up Photo
-            </button>}
+          </div>
+        )}
 
-            {/* Working on This Today button — projects only */}
+        {/* ── Button row — sits below photo (or at top if no photo) ── */}
+        {(isProject || (displayedImageUrl && !displayedImageUrl.startsWith("data:image/png"))) && (
+          <div className="flex gap-2 px-4 pt-3">
             {isProject && (
               <button
                 onClick={isLoggedToday ? handleUndoLog : handleLogToday}
-                className={`absolute bottom-3 left-3 flex items-center gap-1.5
-                           px-3 py-1.5 rounded-lg border-2 font-display font-bold text-[11px]
+                className={`flex-1 flex items-center justify-center gap-1.5
+                           px-3 py-2 rounded-lg border-2 font-display font-bold text-[11px]
                            uppercase tracking-widest transition-all
                            active:translate-x-0.5 active:translate-y-0.5 active:shadow-none
                            ${isLoggedToday
@@ -639,24 +629,20 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
                 {isLoggedToday ? "Logged ✓ · Undo" : "Today's Project"}
               </button>
             )}
-          </div>
-        )}
-
-        {/* ── Working on This Today (no-image projects) ── */}
-        {isProject && !displayedImageUrl && (
-          <div className="px-4 pt-4">
-            <button
-              onClick={isLoggedToday ? handleUndoLog : handleLogToday}
-              className={`w-full py-2.5 rounded-xl flex items-center justify-center gap-2
-                         border-2 font-display font-bold text-[11px] uppercase tracking-widest transition-all
-                         active:translate-x-0.5 active:translate-y-0.5 active:shadow-none
-                         ${isLoggedToday
-                           ? "border-[#8C4F48] bg-[#8C4F48] text-[#F5F0E8] shadow-[2px_2px_0px_0px_rgba(139,94,60,0.3)]"
-                           : "border-[#8C4F48]/50 bg-[#EDD9B4] text-[#3A2210] shadow-[2px_2px_0px_0px_rgba(139,94,60,0.3)]"
-                         }`}
-            >
-              {isLoggedToday ? "Logged ✓ · Undo" : "Today's Project"}
-            </button>
+            {displayedImageUrl && !displayedImageUrl.startsWith("data:image/png") && (
+              <button
+                onClick={() => setShowCleanup(true)}
+                className="flex-1 flex items-center justify-center gap-1.5
+                           px-3 py-2 rounded-lg
+                           border-2 border-[#8C4F48]/50 bg-[#EDD9B4] text-[#3A2210]
+                           font-display font-bold text-[11px] uppercase tracking-widest
+                           shadow-[2px_2px_0px_0px_rgba(139,94,60,0.3)]
+                           active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                Clean Up Photo
+              </button>
+            )}
           </div>
         )}
 
