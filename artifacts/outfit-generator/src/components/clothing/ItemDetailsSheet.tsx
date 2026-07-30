@@ -636,7 +636,7 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
                              : "border-[#8C4F48]/50 bg-[#EDD9B4] text-[#3A2210] shadow-[2px_2px_0px_0px_rgba(139,94,60,0.3)]"
                            }`}
               >
-                {isLoggedToday ? "Logged ✓ · Undo" : "Working on This Today"}
+                {isLoggedToday ? "Logged ✓ · Undo" : "Today's Project"}
               </button>
             )}
           </div>
@@ -655,7 +655,7 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
                            : "border-[#8C4F48]/50 bg-[#EDD9B4] text-[#3A2210] shadow-[2px_2px_0px_0px_rgba(139,94,60,0.3)]"
                          }`}
             >
-              {isLoggedToday ? "Logged ✓ · Undo" : "Working on This Today"}
+              {isLoggedToday ? "Logged ✓ · Undo" : "Today's Project"}
             </button>
           </div>
         )}
