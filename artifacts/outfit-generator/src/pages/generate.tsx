@@ -334,7 +334,7 @@ export default function GeneratePage() {
                     textAlign: "center",
                     pointerEvents: "auto",
                   }}>
-                    {editingKey === key ? (
+                    {editingKey === key && key !== "toiletries" ? (
                       <input
                         autoFocus
                         value={editDraft}
@@ -362,8 +362,8 @@ export default function GeneratePage() {
                       />
                     ) : (
                       <button
-                        onClick={() => { setEditingKey(key); setEditDraft(names[key as CategoryKey]); }}
-                        style={{ background: "none", border: "none", padding: 0, cursor: "text" }}
+                        onClick={() => { if (key !== "toiletries") { setEditingKey(key); setEditDraft(names[key as CategoryKey]); } }}
+                        style={{ background: "none", border: "none", padding: 0, cursor: key !== "toiletries" ? "text" : "default" }}
                       >
                         <span style={{
                           display: "inline-flex", alignItems: "center", gap: 4,
@@ -380,7 +380,7 @@ export default function GeneratePage() {
                           border: "1px solid rgba(237,217,180,0.18)",
                         }}>
                           {label}
-                          <span style={{ fontSize: Math.max(7, pH(ir, 0.009)), opacity: 0.7, letterSpacing: 0 }}>✏</span>
+                          {key !== "toiletries" && <span style={{ fontSize: Math.max(7, pH(ir, 0.009)), opacity: 0.7, letterSpacing: 0 }}>✏</span>}
                         </span>
                       </button>
                     )}
