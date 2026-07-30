@@ -95,28 +95,12 @@ export default function WelcomePage({ onEnter }: Props) {
       transition={{ duration: EXIT_MS / 1000, ease: "easeIn" }}
       style={{
         position: "fixed", inset: 0, zIndex: 200,
-        background: "#000",
+        background: "#8C4A20",
         overflow: "hidden",
       }}
     >
 
       {/* ── Animated layer (Phase 2 base) ────────────────────────────────── */}
-
-      {/* Dim base hero — always visible in Phase 2 so no dark gap shows behind the sweep */}
-      <img
-        src="/crafts-hero.png"
-        alt=""
-        draggable={false}
-        style={{
-          position: "absolute", inset: 0,
-          width: "100%", height: "100%",
-          objectFit: "cover", objectPosition: "center top",
-          display: "block",
-          filter: "brightness(0.45)",
-          userSelect: "none", pointerEvents: "none",
-          zIndex: 0,
-        }}
-      />
 
       {/* Hero image — clip-path sweeps left→right when animated phase starts */}
       <motion.img
