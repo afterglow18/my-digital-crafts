@@ -47,13 +47,22 @@ export function AppLayout({ children }: AppLayoutProps) {
       {/* Full-width on phone & iPad; phone frame only on desktop */}
       <div className="w-full lg:max-w-md bg-background h-[100dvh] lg:min-h-[850px] lg:h-[850px] lg:border-[6px] lg:border-black lg:rounded-[3rem] lg:shadow-2xl relative overflow-hidden flex flex-col">
 
+        {/* Terracotta status-bar strip — covers the top safe area on iPhone */}
+        <div
+          className="absolute top-0 left-0 right-0 z-[50] pointer-events-none"
+          style={{ height: "env(safe-area-inset-top)", background: "#8C4F48" }}
+        />
+
         {/* Main Content Area */}
         <main className="flex-1 overflow-y-auto pb-[90px] relative" style={{ paddingTop: "env(safe-area-inset-top)" }}>
           {children}
         </main>
 
         {/* Bottom Navigation — centred & capped on wide screens so items don't spread */}
-        <nav className="absolute bottom-0 left-0 right-0 border-t-[3px] border-black p-3 pb-safe z-[40]" style={{ background: "#F5F0E8" }}>
+        <nav
+          className="absolute bottom-0 left-0 right-0 border-t-[3px] border-black z-[40]"
+          style={{ background: "#F5F0E8", padding: "0.75rem 0.75rem calc(env(safe-area-inset-bottom) + 0.75rem)" }}
+        >
           <ul className="flex items-center justify-around md:max-w-sm md:mx-auto lg:max-w-none">
             {navItems.map((item) => {
               const isActive = location === item.href;
