@@ -108,27 +108,6 @@ export default function WelcomePage({ onEnter }: Props) {
 
       {/* ══ PAINTING LAYER (zIndex 1–3) — brush sweeps on tap ══════════════ */}
 
-      {/* Hero image — revealed by clip-path sweep when painting starts */}
-      <motion.img
-        src="/crafts-hero.png"
-        alt=""
-        draggable={false}
-        initial={{ clipPath: "inset(0 100% 0 0)" }}
-        animate={{
-          clipPath: isPainting || isExiting
-            ? "inset(0 0% 0 0)"
-            : "inset(0 100% 0 0)",
-        }}
-        transition={{ duration: PAINT_MS / 1000, ease: [0.1, 0.0, 0.2, 1.0] }}
-        style={{
-          position: "absolute", inset: 0,
-          width: "100%", height: "100%",
-          objectFit: "cover", objectPosition: "center top",
-          display: "block",
-          userSelect: "none", pointerEvents: "none",
-          zIndex: 1,
-        }}
-      />
 
       {/* Soft paint-edge glow */}
       {isPainting && (
