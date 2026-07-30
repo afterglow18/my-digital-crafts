@@ -1,11 +1,11 @@
 /**
  * WelcomePage — Three-phase splash (shown once per cold launch).
  *
- * HERO     : full-screen hero image with branding near the bottom.
- *            Auto-advances after HERO_MS — no interaction needed.
- * IDLE     : orange background, branding + button near the bottom. Static.
- * PAINTING : user tapped the button → paintbrush sweeps across the screen.
- * EXITING  : brief hold after sweep → fade to black → onEnter().
+ * HERO     : full-screen hero image, branding near bottom. Auto-advances 2.5 s.
+ * IDLE     : orange screen, branding + button. Static — no animation.
+ * PAINTING : button tapped → orange layer clips away left→right revealing the
+ *            live app behind it, with the paintbrush riding the leading edge.
+ * EXITING  : brief hold → outer wrapper fades → onEnter().
  */
 
 import { useState, useEffect, useRef, useCallback } from "react";
@@ -15,11 +15,11 @@ interface Props { onEnter: () => void; }
 
 type Phase = "hero" | "idle" | "painting" | "exiting";
 
-const HERO_MS  = 2500;   // how long the hero image is shown
-const HERO_FADE = 500;   // crossfade hero → idle
-const PAINT_MS = 2600;   // brush sweep duration
-const HOLD_MS  = 420;    // pause after sweep before fade
-const EXIT_MS  = 550;    // fade-to-black duration
+const HERO_MS   = 2500;
+const HERO_FADE = 500;
+const PAINT_MS  = 2600;
+const HOLD_MS   = 420;
+const EXIT_MS   = 550;
 
 export default function WelcomePage({ onEnter }: Props) {
   const [phase, setPhase] = useState<Phase>("hero");
@@ -67,16 +67,12 @@ export default function WelcomePage({ onEnter }: Props) {
   const brushSize = Math.round(Math.min(vw, vh) * 0.13);
   const brushY    = vh * 0.38;
 
-  // Branding block — reused in both hero and idle phases
   const Branding = () => (
     <div style={{ textAlign: "center" }}>
       <div style={{
-        fontSize: 11,
-        fontWeight: 500,
-        letterSpacing: "0.25em",
-        textTransform: "uppercase" as const,
-        color: "rgba(237,217,180,0.75)",
-        marginBottom: 8,
+        fontSize: 11, fontWeight: 500,
+        letterSpacing: "0.25em", textTransform: "uppercase" as const,
+        color: "rgba(237,217,180,0.75)", marginBottom: 8,
       }}>
         Welcome to
       </div>
@@ -84,8 +80,7 @@ export default function WelcomePage({ onEnter }: Props) {
         fontFamily: "var(--font-display, serif)",
         fontWeight: 900,
         fontSize: `clamp(28px, ${vw * 0.115}px, 52px)`,
-        letterSpacing: "-0.02em",
-        lineHeight: 1.1,
+        letterSpacing: "-0.02em", lineHeight: 1.1,
         color: "#EDD9B4",
         textShadow: "0 2px 16px rgba(0,0,0,0.55)",
       }}>
@@ -95,21 +90,33 @@ export default function WelcomePage({ onEnter }: Props) {
   );
 
   return (
-    // Outer wrapper — fades to black on exit
+    // Outer wrapper — transparent so the live app shows through when orange is clipped
     <motion.div
       animate={{ opacity: isExiting ? 0 : 1 }}
       transition={{ duration: EXIT_MS / 1000, ease: "easeIn" }}
       style={{
         position: "fixed", inset: 0, zIndex: 200,
-        background: "#8C4A20",
+        background: "transparent",
         overflow: "hidden",
       }}
     >
 
-      {/* ══ PAINTING LAYER (zIndex 1–3) — brush sweeps on tap ══════════════ */}
+      {/* ── Orange background layer — clipped away left→right during painting ── */}
+      <motion.div
+        animate={{
+          clipPath: isPainting || isExiting
+            ? "inset(0 0% 0 100%)"   // fully clipped → app shows through
+            : "inset(0 0% 0 0%)",    // fully visible → orange screen
+        }}
+        transition={{ duration: PAINT_MS / 1000, ease: [0.1, 0.0, 0.2, 1.0] }}
+        style={{
+          position: "absolute", inset: 0,
+          background: "#8C4A20",
+          zIndex: 1,
+        }}
+      />
 
-
-      {/* Soft paint-edge glow */}
+      {/* ── Soft paint-edge glow — rides just ahead of the clip edge ── */}
       {isPainting && (
         <motion.div
           aria-hidden
@@ -125,7 +132,7 @@ export default function WelcomePage({ onEnter }: Props) {
         />
       )}
 
-      {/* Paintbrush riding the leading edge */}
+      {/* ── Paintbrush riding the leading edge ── */}
       {isPainting && (
         <motion.div
           aria-hidden
@@ -157,7 +164,7 @@ export default function WelcomePage({ onEnter }: Props) {
         </motion.div>
       )}
 
-      {/* ══ IDLE LAYER (zIndex 4) — orange screen, branding + button ═══════ */}
+      {/* ── Idle content — branding + button (zIndex 4) ── */}
       <motion.div
         animate={{
           opacity: phase === "idle" ? 1 : 0,
@@ -197,7 +204,7 @@ export default function WelcomePage({ onEnter }: Props) {
         </motion.button>
       </motion.div>
 
-      {/* Footer links — idle phase only */}
+      {/* Footer links — idle only */}
       <motion.div
         animate={{ opacity: phase === "idle" ? 1 : 0 }}
         transition={{ duration: 0.28 }}
@@ -222,7 +229,7 @@ export default function WelcomePage({ onEnter }: Props) {
         >Support</a>
       </motion.div>
 
-      {/* ══ HERO OVERLAY (zIndex 6) — sits on top, fades out to reveal idle ══ */}
+      {/* ── Hero overlay (Phase 1) — sits on top, fades out to reveal idle ── */}
       <motion.div
         animate={{ opacity: phase === "hero" ? 1 : 0 }}
         transition={{ duration: HERO_FADE / 1000, ease: "easeOut" }}
@@ -232,7 +239,6 @@ export default function WelcomePage({ onEnter }: Props) {
           pointerEvents: "none",
         }}
       >
-        {/* Full hero image */}
         <img
           src="/crafts-hero.png"
           alt=""
@@ -244,14 +250,10 @@ export default function WelcomePage({ onEnter }: Props) {
             display: "block",
           }}
         />
-
-        {/* Dark gradient over lower portion for text readability */}
         <div style={{
           position: "absolute", inset: 0,
           background: "linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.35) 40%, transparent 70%)",
         }} />
-
-        {/* Branding near the bottom */}
         <div style={{
           position: "absolute",
           bottom: `calc(env(safe-area-inset-bottom, 0px) + 120px)`,
