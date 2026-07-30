@@ -54,7 +54,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         />
 
         {/* Main Content Area */}
-        <main className="flex-1 overflow-y-auto pb-[90px] relative" style={{ paddingTop: "env(safe-area-inset-top)" }}>
+        <main className="flex-1 overflow-y-auto relative" style={{ paddingTop: "env(safe-area-inset-top)", paddingBottom: "calc(90px + env(safe-area-inset-bottom, 0px))" }}>
           {children}
         </main>
 
