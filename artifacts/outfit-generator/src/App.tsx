@@ -67,11 +67,9 @@ function AppShell() {
 
   return (
     <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
-      {entered ? (
-        <Router />
-      ) : (
-        <WelcomePage onEnter={handleEnter} />
-      )}
+      {/* App always renders in the background so it's ready when the splash sweeps away */}
+      <Router />
+      {!entered && <WelcomePage onEnter={handleEnter} />}
     </WouterRouter>
   );
 }
