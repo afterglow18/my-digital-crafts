@@ -8,6 +8,8 @@
  *   pick ──(files chosen)──► uploading ──► close  (BG removal skipped for batch)
  */
 import React, { useRef, useState, useCallback } from "react";
+import { Capacitor } from "@capacitor/core";
+import { Camera, CameraResultType, CameraSource } from "@capacitor/camera";
 import { useCategoryNames, type CategoryKey } from "@/contexts/CategoryNamesContext";
 import { motion } from "framer-motion";
 import {
@@ -40,6 +42,17 @@ type Phase = "pick" | "encoding" | "preview" | "uploading";
 interface UploadProgress {
   current: number;
   total:   number;
+}
+
+// ── Capacitor camera helper ────────────────────────────────────────────────────
+
+function dataUrlToFile(dataUrl: string, filename: string): File {
+  const [header, base64] = dataUrl.split(",");
+  const mime = (header.match(/:(.*?);/) ?? [])[1] ?? "image/jpeg";
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return new File([bytes], filename, { type: mime });
 }
 
 // ── Helpers (outside component) ────────────────────────────────────────────────
@@ -402,6 +415,57 @@ export function QuickAddSheet({ open, onOpenChange, category, existingCount, onC
     }
   }, [saveOneFile, existingCount, handleClose]);
 
+  // ── Photo picker handlers ───────────────────────────────────────────────────
+  // On iOS (Capacitor) use the Camera plugin — HTML file inputs crash WKWebView.
+  // On web fall back to the hidden <input> elements.
+
+  const openCamera = useCallback(async () => {
+    if (Capacitor.isNativePlatform()) {
+      try {
+        const photo = await Camera.getPhoto({
+          source: CameraSource.Camera,
+          resultType: CameraResultType.DataUrl,
+          quality: 90,
+          allowEditing: false,
+          width: 2048,
+        });
+        if (photo.dataUrl) handleFile(dataUrlToFile(photo.dataUrl, "photo.jpg"));
+      } catch {
+        // user cancelled — no-op
+      }
+    } else {
+      cameraInputRef.current?.click();
+    }
+  }, [handleFile]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const openGallery = useCallback(async () => {
+    if (Capacitor.isNativePlatform()) {
+      try {
+        const result = await Camera.pickImages({ quality: 90, width: 2048 });
+        if (result.photos.length === 0) return;
+        if (result.photos.length === 1) {
+          const resp = await fetch(result.photos[0].webPath!);
+          const blob = await resp.blob();
+          handleFile(new File([blob], "photo.jpg", { type: blob.type || "image/jpeg" }));
+        } else {
+          const files = await Promise.all(
+            result.photos.map(async (p, i) => {
+              const resp = await fetch(p.webPath!);
+              const blob = await resp.blob();
+              return new File([blob], `photo_${i}.jpg`, { type: blob.type || "image/jpeg" });
+            })
+          );
+          handleFiles(files);
+        }
+      } catch {
+        // user cancelled — no-op
+      }
+    } else {
+      galleryInputRef.current?.click();
+    }
+  }, [handleFile, handleFiles]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Web-only fallback handlers for hidden <input> elements
   const handleCameraChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);
     if (files.length) handleFile(files[0]);
@@ -410,11 +474,8 @@ export function QuickAddSheet({ open, onOpenChange, category, existingCount, onC
 
   const handleGalleryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);
-    if (files.length === 1) {
-      handleFile(files[0]); // single pick → BG removal flow
-    } else if (files.length > 1) {
-      handleFiles(files);   // multi-pick → batch upload
-    }
+    if (files.length === 1) handleFile(files[0]);
+    else if (files.length > 1) handleFiles(files);
     e.target.value = "";
   };
 
@@ -466,7 +527,7 @@ export function QuickAddSheet({ open, onOpenChange, category, existingCount, onC
             {/* Two big action buttons */}
             <div className="flex gap-3">
               <button
-                onClick={() => cameraInputRef.current?.click()}
+                onClick={openCamera}
                 className="flex-1 flex flex-col items-center justify-center gap-3 py-8
                            border-4 border-black rounded-2xl bg-primary
                            shadow-[5px_5px_0px_0px_rgba(0,0,0,1)]
@@ -479,7 +540,7 @@ export function QuickAddSheet({ open, onOpenChange, category, existingCount, onC
               </button>
 
               <button
-                onClick={() => galleryInputRef.current?.click()}
+                onClick={openGallery}
                 className="flex-1 flex flex-col items-center justify-center gap-3 py-8
                            border-4 border-black rounded-2xl bg-white
                            shadow-[5px_5px_0px_0px_rgba(0,0,0,1)]
