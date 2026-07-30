@@ -1,10 +1,11 @@
 /**
- * WelcomePage — Three-phase splash screen (shown once per cold launch).
+ * WelcomePage — Three-phase splash (shown once per cold launch).
  *
  * HERO     : full-screen hero image with branding near the bottom.
- *            Auto-advances after HERO_MS with a crossfade — no user interaction.
- * ANIMATED : existing paintbrush sweep auto-starts; title + button near the bottom.
- * EXITING  : user tapped button → fade to black → onEnter().
+ *            Auto-advances after HERO_MS — no interaction needed.
+ * IDLE     : orange background, branding + button near the bottom. Static.
+ * PAINTING : user tapped the button → paintbrush sweeps across the screen.
+ * EXITING  : brief hold after sweep → fade to black → onEnter().
  */
 
 import { useState, useEffect, useRef, useCallback } from "react";
@@ -12,12 +13,13 @@ import { motion } from "framer-motion";
 
 interface Props { onEnter: () => void; }
 
-type Phase = "hero" | "animated" | "exiting";
+type Phase = "hero" | "idle" | "painting" | "exiting";
 
-const HERO_MS   = 2500;   // how long Phase 1 is shown
-const HERO_FADE = 500;    // crossfade hero → animated
-const PAINT_MS  = 2600;   // brush sweep
-const EXIT_MS   = 750;    // fade-to-black on exit
+const HERO_MS  = 2500;   // how long the hero image is shown
+const HERO_FADE = 500;   // crossfade hero → idle
+const PAINT_MS = 2600;   // brush sweep duration
+const HOLD_MS  = 420;    // pause after sweep before fade
+const EXIT_MS  = 550;    // fade-to-black duration
 
 export default function WelcomePage({ onEnter }: Props) {
   const [phase, setPhase] = useState<Phase>("hero");
@@ -40,7 +42,11 @@ export default function WelcomePage({ onEnter }: Props) {
 
   useEffect(() => {
     if (phase === "hero") {
-      const t = setTimeout(() => setPhase("animated"), HERO_MS);
+      const t = setTimeout(() => setPhase("idle"), HERO_MS);
+      return () => clearTimeout(t);
+    }
+    if (phase === "painting") {
+      const t = setTimeout(() => setPhase("exiting"), PAINT_MS + HOLD_MS);
       return () => clearTimeout(t);
     }
     if (phase === "exiting") {
@@ -51,17 +57,17 @@ export default function WelcomePage({ onEnter }: Props) {
   }, [phase, finish]);
 
   const handleOpen = () => {
-    if (phase !== "animated") return;
-    setPhase("exiting");
+    if (phase !== "idle") return;
+    setPhase("painting");
   };
 
-  const isAnimating = phase === "animated" || phase === "exiting";
-  const isExiting   = phase === "exiting";
+  const isPainting = phase === "painting";
+  const isExiting  = phase === "exiting";
 
   const brushSize = Math.round(Math.min(vw, vh) * 0.13);
   const brushY    = vh * 0.38;
 
-  // Shared branding block (used in both hero and animated overlays)
+  // Branding block — reused in both hero and idle phases
   const Branding = () => (
     <div style={{ textAlign: "center" }}>
       <div style={{
@@ -89,7 +95,7 @@ export default function WelcomePage({ onEnter }: Props) {
   );
 
   return (
-    // Outer wrapper: fades to black on exit
+    // Outer wrapper — fades to black on exit
     <motion.div
       animate={{ opacity: isExiting ? 0 : 1 }}
       transition={{ duration: EXIT_MS / 1000, ease: "easeIn" }}
@@ -100,15 +106,19 @@ export default function WelcomePage({ onEnter }: Props) {
       }}
     >
 
-      {/* ── Animated layer (Phase 2 base) ────────────────────────────────── */}
+      {/* ══ PAINTING LAYER (zIndex 1–3) — brush sweeps on tap ══════════════ */}
 
-      {/* Hero image — clip-path sweeps left→right when animated phase starts */}
+      {/* Hero image — revealed by clip-path sweep when painting starts */}
       <motion.img
         src="/crafts-hero.png"
         alt=""
         draggable={false}
         initial={{ clipPath: "inset(0 100% 0 0)" }}
-        animate={{ clipPath: isAnimating ? "inset(0 0% 0 0)" : "inset(0 100% 0 0)" }}
+        animate={{
+          clipPath: isPainting || isExiting
+            ? "inset(0 0% 0 0)"
+            : "inset(0 100% 0 0)",
+        }}
         transition={{ duration: PAINT_MS / 1000, ease: [0.1, 0.0, 0.2, 1.0] }}
         style={{
           position: "absolute", inset: 0,
@@ -121,7 +131,7 @@ export default function WelcomePage({ onEnter }: Props) {
       />
 
       {/* Soft paint-edge glow */}
-      {phase === "animated" && (
+      {isPainting && (
         <motion.div
           aria-hidden
           initial={{ left: -vw * 0.10 }}
@@ -137,7 +147,7 @@ export default function WelcomePage({ onEnter }: Props) {
       )}
 
       {/* Paintbrush riding the leading edge */}
-      {phase === "animated" && (
+      {isPainting && (
         <motion.div
           aria-hidden
           initial={{ left: -brushSize * 0.5, opacity: 0 }}
@@ -168,30 +178,21 @@ export default function WelcomePage({ onEnter }: Props) {
         </motion.div>
       )}
 
-      {/* Gradient for text readability behind Phase 2 branding */}
-      <div
-        aria-hidden
-        style={{
-          position: "absolute", bottom: 0, left: 0, right: 0,
-          height: "55%",
-          background: "linear-gradient(to top, rgba(0,0,0,0.70) 0%, rgba(0,0,0,0.35) 50%, transparent 100%)",
-          zIndex: 4, pointerEvents: "none",
-        }}
-      />
-
-      {/* Phase 2 branding + button */}
+      {/* ══ IDLE LAYER (zIndex 4) — orange screen, branding + button ═══════ */}
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: phase === "animated" ? 1 : 0 }}
-        transition={{ duration: 0.45, ease: "easeOut" }}
+        animate={{
+          opacity: phase === "idle" ? 1 : 0,
+          y:       phase === "idle" ? 0  : 14,
+        }}
+        transition={{ duration: 0.28 }}
         style={{
           position: "absolute", inset: 0,
           display: "flex", flexDirection: "column",
           alignItems: "center", justifyContent: "flex-end",
           paddingBottom: `calc(env(safe-area-inset-bottom, 0px) + 100px)`,
-          zIndex: 5,
-          pointerEvents: phase === "animated" ? "auto" : "none",
-          gap: 24,
+          gap: 28,
+          zIndex: 4,
+          pointerEvents: phase === "idle" ? "auto" : "none",
         }}
       >
         <Branding />
@@ -217,18 +218,17 @@ export default function WelcomePage({ onEnter }: Props) {
         </motion.button>
       </motion.div>
 
-      {/* Footer links — Phase 2 only */}
+      {/* Footer links — idle phase only */}
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: phase === "animated" ? 1 : 0 }}
-        transition={{ duration: 0.45, ease: "easeOut" }}
+        animate={{ opacity: phase === "idle" ? 1 : 0 }}
+        transition={{ duration: 0.28 }}
         style={{
           position: "fixed",
           bottom: "calc(env(safe-area-inset-bottom) + 10px)",
           left: 0, right: 0,
           display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
-          zIndex: 10,
-          pointerEvents: phase === "animated" ? "auto" : "none",
+          zIndex: 5,
+          pointerEvents: phase === "idle" ? "auto" : "none",
         }}
       >
         <a
@@ -243,7 +243,7 @@ export default function WelcomePage({ onEnter }: Props) {
         >Support</a>
       </motion.div>
 
-      {/* ── Hero overlay (Phase 1) — sits on top, fades out into Phase 2 ── */}
+      {/* ══ HERO OVERLAY (zIndex 6) — sits on top, fades out to reveal idle ══ */}
       <motion.div
         animate={{ opacity: phase === "hero" ? 1 : 0 }}
         transition={{ duration: HERO_FADE / 1000, ease: "easeOut" }}
@@ -253,7 +253,7 @@ export default function WelcomePage({ onEnter }: Props) {
           pointerEvents: "none",
         }}
       >
-        {/* Hero image — fully visible, no clip-path */}
+        {/* Full hero image */}
         <img
           src="/crafts-hero.png"
           alt=""
