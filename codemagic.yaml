@@ -104,6 +104,13 @@ workflows:
           # Required for Face ID usage
           /usr/libexec/PlistBuddy -c "Add :NSFaceIDUsageDescription string 'My Digital Crafts uses Face ID to protect your wardrobe.'" App/Info.plist 2>/dev/null || \
           /usr/libexec/PlistBuddy -c "Set :NSFaceIDUsageDescription 'My Digital Crafts uses Face ID to protect your wardrobe.'" App/Info.plist
+          # Required for camera and photo library access (missing = hard SIGABRT crash on launch)
+          /usr/libexec/PlistBuddy -c "Add :NSCameraUsageDescription string 'My Digital Crafts uses your camera so you can photograph items and add them to your collection.'" App/Info.plist 2>/dev/null || \
+          /usr/libexec/PlistBuddy -c "Set :NSCameraUsageDescription 'My Digital Crafts uses your camera so you can photograph items and add them to your collection.'" App/Info.plist
+          /usr/libexec/PlistBuddy -c "Add :NSPhotoLibraryUsageDescription string 'My Digital Crafts reads your photo library so you can select photos to add to your collection.'" App/Info.plist 2>/dev/null || \
+          /usr/libexec/PlistBuddy -c "Set :NSPhotoLibraryUsageDescription 'My Digital Crafts reads your photo library so you can select photos to add to your collection.'" App/Info.plist
+          /usr/libexec/PlistBuddy -c "Add :NSPhotoLibraryAddUsageDescription string 'My Digital Crafts saves photos you take with the camera to your photo library.'" App/Info.plist 2>/dev/null || \
+          /usr/libexec/PlistBuddy -c "Set :NSPhotoLibraryAddUsageDescription 'My Digital Crafts saves photos you take with the camera to your photo library.'" App/Info.plist
 
       - name: Re-apply provisioning profiles after cap sync
         script: |
