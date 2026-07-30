@@ -25,17 +25,18 @@ export interface StoredClothingItem {
   category:       string;        // "outfits" | "beauty" | "toiletries" | "essentials"
   imageObjectPath: string | null; // JPEG data URL  (e.g. "data:image/jpeg;base64,...")
   isFavorite:     boolean;
-  timesWorn:      number;
-  color?:         string | null;
-  brand?:         string | null;
-  size?:          string | null;
-  season?:        string | null;
-  occasion?:      string | null;
-  purchasePrice?: string | null;
-  purchaseDate?:  string | null;
-  notes?:         string | null;
-  createdAt:      string;
-  updatedAt:      string;
+  timesWorn:        number;
+  lastWorkedDate?:  string | null;   // "YYYY-MM-DD" local date, null = never logged
+  color?:           string | null;
+  brand?:           string | null;
+  size?:            string | null;
+  season?:          string | null;
+  occasion?:        string | null;
+  purchasePrice?:   string | null;
+  purchaseDate?:    string | null;
+  notes?:           string | null;
+  createdAt:        string;
+  updatedAt:        string;
 }
 
 export interface StoredOutfit {

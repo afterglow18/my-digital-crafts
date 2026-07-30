@@ -386,6 +386,18 @@ function isDirty(form: FormState, item: ClothingItem): boolean {
   );
 }
 
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function todayLocalDate(): string {
+  // Returns YYYY-MM-DD in the user's local timezone
+  return new Date().toLocaleDateString("en-CA");
+}
+
+function fmtWorkedDate(dateStr: string): string {
+  // "YYYY-MM-DD" → "M/D/YY"
+  const [y, m, d] = dateStr.split("-").map(Number);
+  return `${m}/${d}/${String(y).slice(2)}`;
+}
+
 export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetProps) {
   const { names: categoryNames } = useCategoryNames();
   const [form,              setForm]              = useState<FormState | null>(null);
@@ -398,13 +410,23 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
    */
   const [localImageUrl, setLocalImageUrl] = useState<string | null>(null);
 
+  // ── Craft-tracking state (projects only) ────────────────────────────────────
+  const [localTimesWorn,      setLocalTimesWorn]      = useState(item?.timesWorn ?? 0);
+  const [localLastWorkedDate, setLocalLastWorkedDate] = useState<string | null>(item?.lastWorkedDate ?? null);
+  const [prevLastWorkedDate,  setPrevLastWorkedDate]  = useState<string | null | undefined>(undefined);
+
   const updateItem  = useUpdateClothingItem();
   const deleteItem  = useDeleteClothingItem();
   const queryClient = useQueryClient();
 
   // Reset form and cleanup state whenever item changes
   useEffect(() => {
-    if (item) setForm(toForm(item));
+    if (item) {
+      setForm(toForm(item));
+      setLocalTimesWorn(item.timesWorn ?? 0);
+      setLocalLastWorkedDate(item.lastWorkedDate ?? null);
+      setPrevLastWorkedDate(undefined);
+    }
     setShowDeleteConfirm(false);
     setShowCleanup(false);
     setLocalImageUrl(null);
@@ -415,6 +437,34 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
     queryClient.invalidateQueries({ queryKey: getListOutfitsQueryKey() });
     queryClient.invalidateQueries({ queryKey: getWardrobeStatsQueryKey() });
   }, [queryClient]);
+
+  // ── Craft-tracking helpers ───────────────────────────────────────────────────
+  const isProject    = item?.category === "toiletries";
+  const todayStr     = todayLocalDate();
+  const isLoggedToday = localLastWorkedDate === todayStr;
+
+  const handleLogToday = useCallback(() => {
+    const nextCount = localTimesWorn + 1;
+    setPrevLastWorkedDate(localLastWorkedDate);
+    setLocalTimesWorn(nextCount);
+    setLocalLastWorkedDate(todayStr);
+    updateItem.mutate(
+      { id: item!.id, data: { timesWorn: nextCount, lastWorkedDate: todayStr } },
+      { onSuccess: invalidateAll },
+    );
+  }, [localTimesWorn, localLastWorkedDate, todayStr, item, updateItem, invalidateAll]);
+
+  const handleUndoLog = useCallback(() => {
+    const nextCount = Math.max(0, localTimesWorn - 1);
+    const restoredDate = prevLastWorkedDate ?? null;
+    setLocalTimesWorn(nextCount);
+    setLocalLastWorkedDate(restoredDate);
+    setPrevLastWorkedDate(undefined);
+    updateItem.mutate(
+      { id: item!.id, data: { timesWorn: nextCount, lastWorkedDate: restoredDate } },
+      { onSuccess: invalidateAll },
+    );
+  }, [localTimesWorn, prevLastWorkedDate, item, updateItem, invalidateAll]);
 
   if (!item || !form) return null;
 
@@ -572,6 +622,41 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
               <Sparkles className="w-3.5 h-3.5" />
               Clean Up Photo
             </button>}
+
+            {/* Working on This Today button — projects only */}
+            {isProject && (
+              <button
+                onClick={isLoggedToday ? handleUndoLog : handleLogToday}
+                className={`absolute bottom-3 left-3 flex items-center gap-1.5
+                           px-3 py-1.5 rounded-lg border-2 font-display font-bold text-[11px]
+                           uppercase tracking-widest transition-all
+                           active:translate-x-0.5 active:translate-y-0.5 active:shadow-none
+                           ${isLoggedToday
+                             ? "border-[#8C4F48] bg-[#8C4F48] text-[#F5F0E8] shadow-[2px_2px_0px_0px_rgba(139,94,60,0.3)]"
+                             : "border-[#8C4F48]/50 bg-[#EDD9B4] text-[#3A2210] shadow-[2px_2px_0px_0px_rgba(139,94,60,0.3)]"
+                           }`}
+              >
+                {isLoggedToday ? "Logged ✓ · Undo" : "Working on This Today"}
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* ── Working on This Today (no-image projects) ── */}
+        {isProject && !displayedImageUrl && (
+          <div className="px-4 pt-4">
+            <button
+              onClick={isLoggedToday ? handleUndoLog : handleLogToday}
+              className={`w-full py-2.5 rounded-xl flex items-center justify-center gap-2
+                         border-2 font-display font-bold text-[11px] uppercase tracking-widest transition-all
+                         active:translate-x-0.5 active:translate-y-0.5 active:shadow-none
+                         ${isLoggedToday
+                           ? "border-[#8C4F48] bg-[#8C4F48] text-[#F5F0E8] shadow-[2px_2px_0px_0px_rgba(139,94,60,0.3)]"
+                           : "border-[#8C4F48]/50 bg-[#EDD9B4] text-[#3A2210] shadow-[2px_2px_0px_0px_rgba(139,94,60,0.3)]"
+                         }`}
+            >
+              {isLoggedToday ? "Logged ✓ · Undo" : "Working on This Today"}
+            </button>
           </div>
         )}
 
@@ -623,7 +708,7 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
             />
           </div>
 
-          {/* Category (editable) + Times Worn (read-only) */}
+          {/* Category (editable) + Times Worked On / Times Worn */}
           <div className="grid grid-cols-2 gap-3">
             <SelectField
               label="Category"
@@ -632,12 +717,42 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
               options={CATEGORY_OPTIONS}
               displayMap={categoryNames}
             />
-            <div className="flex flex-col gap-1 opacity-50 pointer-events-none">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-[#6B3838]/55">Times Worn</span>
-              <div className="border-2 border-[#8C4F48]/20 rounded-lg px-3 py-2 text-sm font-medium bg-[#fdf8f0]/50 text-[#3A2210]">
-                {item.timesWorn ?? 0}
+            {isProject ? (
+              <div className="flex flex-col gap-1">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-[#6B3838]/55">Times Worked On</span>
+                <input
+                  type="number"
+                  min="0"
+                  value={localTimesWorn}
+                  onChange={e => {
+                    const n = Math.max(0, parseInt(e.target.value) || 0);
+                    setLocalTimesWorn(n);
+                  }}
+                  onBlur={e => {
+                    const n = Math.max(0, parseInt(e.target.value) || 0);
+                    setLocalTimesWorn(n);
+                    updateItem.mutate(
+                      { id: item.id, data: { timesWorn: n } },
+                      { onSuccess: invalidateAll },
+                    );
+                  }}
+                  className="border-2 border-[#8C4F48]/30 rounded-lg px-3 py-2 text-sm font-medium
+                             text-[#3A2210] bg-[#fdf8f0] focus:outline-none focus:ring-2 focus:ring-[#8C4F48]/20"
+                />
+                {localLastWorkedDate && (
+                  <span className="text-[10px] text-[#6B3838]/55 mt-0.5">
+                    Last worked on: {fmtWorkedDate(localLastWorkedDate)}
+                  </span>
+                )}
               </div>
-            </div>
+            ) : (
+              <div className="flex flex-col gap-1 opacity-50 pointer-events-none">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-[#6B3838]/55">Times Worn</span>
+                <div className="border-2 border-[#8C4F48]/20 rounded-lg px-3 py-2 text-sm font-medium bg-[#fdf8f0]/50 text-[#3A2210]">
+                  {item.timesWorn ?? 0}
+                </div>
+              </div>
+            )}
           </div>
 
         </div>
