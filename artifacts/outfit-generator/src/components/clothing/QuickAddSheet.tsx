@@ -716,24 +716,27 @@ export function QuickAddSheet({ open, onOpenChange, category, existingCount, onC
 
       </div>
 
-      {/* Hidden file inputs */}
-      {/* Camera — opens native camera, always single file */}
+      {/* File inputs — must NOT be display:none on iOS/WKWebView (causes hard crash).
+          Keep in layout tree but invisible via opacity+size-0. */}
       <input
         ref={cameraInputRef}
         type="file"
         accept="image/*"
         capture="environment"
-        className="hidden"
         onChange={handleCameraChange}
+        style={{ position: "absolute", opacity: 0, pointerEvents: "none", width: 0, height: 0, overflow: "hidden" }}
+        tabIndex={-1}
+        aria-hidden
       />
-      {/* Gallery — opens photo library / file picker, allows multiple */}
       <input
         ref={galleryInputRef}
         type="file"
         accept="image/*"
         multiple
-        className="hidden"
         onChange={handleGalleryChange}
+        style={{ position: "absolute", opacity: 0, pointerEvents: "none", width: 0, height: 0, overflow: "hidden" }}
+        tabIndex={-1}
+        aria-hidden
       />
     </motion.div>
   );
