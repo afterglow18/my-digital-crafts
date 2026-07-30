@@ -157,7 +157,7 @@ export default function AccountPage() {
     <>
     <div
       className="min-h-full flex flex-col px-4 md:px-8 pb-10"
-      style={{ paddingTop: "max(2rem, env(safe-area-inset-top))", background: "#F5F0E8" }}
+      style={{ paddingTop: "2rem", background: "#F5F0E8" }}
     >
       {/* Page title */}
       <header className="mb-5">

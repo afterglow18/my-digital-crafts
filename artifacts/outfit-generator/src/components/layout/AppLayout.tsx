@@ -48,7 +48,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       <div className="w-full lg:max-w-md bg-background h-[100dvh] lg:min-h-[850px] lg:h-[850px] lg:border-[6px] lg:border-black lg:rounded-[3rem] lg:shadow-2xl relative overflow-hidden flex flex-col">
 
         {/* Main Content Area */}
-        <main className="flex-1 overflow-y-auto pb-[90px] relative">
+        <main className="flex-1 overflow-y-auto pb-[90px] relative" style={{ paddingTop: "env(safe-area-inset-top)" }}>
           {children}
         </main>
 
