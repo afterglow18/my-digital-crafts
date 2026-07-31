@@ -100,8 +100,14 @@ function useSubscriptionContext() {
       const Purchases = await getPurchases();
       if (!Purchases) return null;
       const result = await Purchases.getOfferings();
+      // The Capacitor plugin may return PurchasesOfferings directly or wrapped
+      // in { offerings: PurchasesOfferings } depending on the native bridge.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return (result as any).offerings ?? result ?? null;
+      const offerings = (result as any).offerings ?? result ?? null;
+      console.log("[RevenueCat] getOfferings raw:", JSON.stringify(result, null, 2));
+      console.log("[RevenueCat] current offering:", offerings?.current?.identifier ?? "null");
+      console.log("[RevenueCat] available packages:", offerings?.current?.availablePackages?.map((p: { identifier: string }) => p.identifier) ?? []);
+      return offerings;
     },
     staleTime: 300 * 1000,
     retry: false,

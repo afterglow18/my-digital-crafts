@@ -186,7 +186,11 @@ export function UpgradeSheet({ reason, onClose }: Props) {
     const pkg = getRcPackage(offerings, TIER_DEFAULTS[selected].pkgId);
     if (!pkg) {
       setStatus("idle");
-      setError("This plan isn't available yet. Please try Monthly.");
+      if (!offerings || !offerings.current) {
+        setError("Plans couldn't load from the App Store. Please check your connection and try again.");
+      } else {
+        setError(`The ${TIER_DEFAULTS[selected].label.toLowerCase()} plan isn't available yet. Please try another plan.`);
+      }
       return;
     }
     try {
