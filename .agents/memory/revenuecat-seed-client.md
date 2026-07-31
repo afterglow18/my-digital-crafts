@@ -14,7 +14,7 @@ description: How to create the RC management API client in scripts/ and what API
 ## RC project created
 
 - Project name: "My Digital Suitcase"
-- Entitlement: `premium`
+- Entitlement identifier: `My Digital Crafts Pro`
 - Product identifier: `premium_monthly`  ($9.99/month)
 - Offering: `default` (set as current)
 - Package: `$rc_monthly`
