@@ -55,20 +55,32 @@ async function getPurchases(): Promise<PurchasesType | null> {
 }
 
 // ── Initialization ────────────────────────────────────────────────────────────
+// Cached promise so every caller awaits the same single configure() call.
+// Re-entrancy safe: calling initializeRevenueCat() twice returns the same promise.
 
-export async function initializeRevenueCat(): Promise<void> {
-  const Purchases = await getPurchases();
-  if (!Purchases) return;
+let _initPromise: Promise<void> | null = null;
 
-  const apiKey = getApiKey();
+export function initializeRevenueCat(): Promise<void> {
+  if (_initPromise) return _initPromise;
+  _initPromise = (async () => {
+    const Purchases = await getPurchases();
+    if (!Purchases) return; // browser — nothing to configure
 
-  try {
-    const { LOG_LEVEL } = await import("@revenuecat/purchases-capacitor");
-    await Purchases.setLogLevel({ level: LOG_LEVEL.DEBUG });
-  } catch { /* non-fatal */ }
+    const apiKey = getApiKey();
 
-  await Purchases.configure({ apiKey });
-  console.log("[RevenueCat] Configured");
+    try {
+      const { LOG_LEVEL } = await import("@revenuecat/purchases-capacitor");
+      await Purchases.setLogLevel({ level: LOG_LEVEL.DEBUG });
+    } catch { /* non-fatal */ }
+
+    await Purchases.configure({ apiKey });
+    console.log("[RevenueCat] Configured");
+  })().catch((err) => {
+    // Reset so the next call retries (e.g. after a transient failure).
+    _initPromise = null;
+    throw err;
+  });
+  return _initPromise;
 }
 
 // ── Query key ─────────────────────────────────────────────────────────────────
@@ -97,20 +109,24 @@ function useSubscriptionContext() {
   const offeringsQuery = useQuery({
     queryKey: ["revenuecat", "offerings"],
     queryFn: async () => {
+      // Ensure configure() has completed before fetching offerings.
+      // initializeRevenueCat() returns the same cached promise every time,
+      // so this is a no-op once RC is ready.
+      await initializeRevenueCat();
       const Purchases = await getPurchases();
       if (!Purchases) return null;
       const result = await Purchases.getOfferings();
-      // The Capacitor plugin may return PurchasesOfferings directly or wrapped
-      // in { offerings: PurchasesOfferings } depending on the native bridge.
+      // The Capacitor plugin returns PurchasesOfferings directly (v13+).
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const offerings = (result as any).offerings ?? result ?? null;
-      console.log("[RevenueCat] getOfferings raw:", JSON.stringify(result, null, 2));
       console.log("[RevenueCat] current offering:", offerings?.current?.identifier ?? "null");
       console.log("[RevenueCat] available packages:", offerings?.current?.availablePackages?.map((p: { identifier: string }) => p.identifier) ?? []);
       return offerings;
     },
     staleTime: 300 * 1000,
-    retry: false,
+    // Retry up to 3 times with back-off in case configure() hasn't settled yet.
+    retry: 3,
+    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 8000),
   });
 
   // ── Foreground + server-push listeners ─────────────────────────────────────
