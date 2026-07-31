@@ -120,10 +120,6 @@ export default function WardrobePage() {
   const [addCategory,   setAddCategory]   = useState<Category | null>(null);
   const [detailsItem,   setDetailsItem]   = useState<ClothingItem | null>(null);
   const [upgradeReason, setUpgradeReason] = useState<UpgradeReason | null>(null);
-  const [isSaveOpen,    setIsSaveOpen]    = useState(false);
-  const [saveName,      setSaveName]      = useState("");
-  const [saveSuccess,   setSaveSuccess]   = useState(false);
-
   const saveOutfit = useSaveOutfit();
 
   const { data: outfitsItems  = [] } = useListClothing({ category: "outfits"    }, { query: { queryKey: getListClothingQueryKey({ category: "outfits"    }) } });
@@ -172,24 +168,20 @@ export default function WardrobePage() {
 
   const handleItemTap = useCallback((item: ClothingItem) => setDetailsItem(item), []);
 
-  const handleSave = () => {
-    if (!saveName.trim()) return;
+  const [, navigate] = useLocation();
+
+  // Save the currently-centred items directly to the lookbook, then navigate there.
+  const handleDirectSave = useCallback(() => {
     const itemIds = Object.values(centred)
       .filter((i): i is ClothingItem => i != null)
       .map(i => i.id);
+    if (itemIds.length === 0) { navigate("/saved"); return; }
+    const name = new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
     saveOutfit.mutate(
-      { data: { name: saveName.trim(), itemIds } },
-      {
-        onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: getListOutfitsQueryKey() });
-          setSaveSuccess(true);
-          setTimeout(() => { setIsSaveOpen(false); setSaveSuccess(false); setSaveName(""); }, 1400);
-        },
-      },
+      { data: { name, itemIds } },
+      { onSuccess: () => { queryClient.invalidateQueries({ queryKey: getListOutfitsQueryKey() }); navigate("/saved"); } },
     );
-  };
-
-  const [, navigate] = useLocation();
+  }, [centred, saveOutfit, queryClient, navigate]); // eslint-disable-line react-hooks/exhaustive-deps
   const isFree    = tier === "free";
   const itemsLeft = isFree ? Math.max(0, FREE_ITEM_LIMIT - totalItems) : null;
   const ready     = ir.width > 0;
@@ -389,143 +381,60 @@ export default function WardrobePage() {
           })}
 
 
-          {/* ── Person icon tap zone ── */}
+          {/* ── LEFT: Heart/person icon → Favorites ── */}
           <button
             onClick={() => navigate("/favorites")}
-            data-testid="button-person-icon"
-            aria-label="View saved collections"
+            data-testid="button-favorites"
+            aria-label="Go to favourites"
             style={{
               position: "absolute",
-              top:    pY(ir, 0.895),
-              left:   pX(ir, 0.115),
-              width:  pW(ir, 0.170),
-              height: pH(ir, 0.080),
-              zIndex: 25,
+              top:    pY(ir, 0.880),
+              left:   pX(ir, 0.06),
+              width:  pW(ir, 0.220),
+              height: pH(ir, 0.100),
+              zIndex: 27,
               background: "transparent",
               border: "none",
               cursor: "pointer",
             }}
           />
 
-          {/* ── Lipstick icon tap zone — opens premium upgrade sheet ── */}
+          {/* ── CENTER: Save → save centred items to lookbook then navigate ── */}
           <button
-            onClick={() => setUpgradeReason("items")}
-            aria-label="Upgrade to premium"
+            onClick={handleDirectSave}
+            aria-label="Save to lookbook"
             style={{
               position: "absolute",
-              top:    pY(ir, 0.905),
-              left:   pX(ir, 0.755),
-              width:  pW(ir, 0.110),
-              height: pH(ir, 0.065),
-              zIndex: 25,
-              background: "transparent",
-              border: "none",
-              cursor: "pointer",
-            }}
-          />
-
-          {/* ── SAVE tap target — transparent overlay on the baked-in image button ── */}
-          <button
-            onClick={() => { setSaveName(""); setIsSaveOpen(true); }}
-            aria-label="Save current collection"
-            style={{
-              position: "absolute",
-              top:    pY(ir, 0.9466) - pW(ir, 0.074),
-              left:   pX(ir, 0.500)  - pW(ir, 0.074),
-              width:  pW(ir, 0.148),
-              height: pW(ir, 0.148),
-              borderRadius: "50%",
-              zIndex: 26,
+              top:    pY(ir, 0.875),
+              left:   pX(ir, 0.500) - pW(ir, 0.110),
+              width:  pW(ir, 0.220),
+              height: pH(ir, 0.100),
+              zIndex: 27,
               background: "transparent",
               border: "none",
               cursor: "pointer",
               padding: 0,
             }}
           />
+
+          {/* ── RIGHT: Scissors icon → Plan / checkout page ── */}
+          <button
+            onClick={() => navigate("/account")}
+            aria-label="Go to plan"
+            style={{
+              position: "absolute",
+              top:    pY(ir, 0.880),
+              left:   pX(ir, 0.720),
+              width:  pW(ir, 0.220),
+              height: pH(ir, 0.100),
+              zIndex: 27,
+              background: "transparent",
+              border: "none",
+              cursor: "pointer",
+            }}
+          />
         </>
       )}
-
-      {/* ── Save modal ── */}
-      <AnimatePresence>
-        {isSaveOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            style={{
-              position: "absolute", inset: 0, zIndex: 60,
-              background: "rgba(0,0,0,0.45)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              padding: "0 24px",
-            }}
-          >
-            <motion.div
-              initial={{ scale: 0.92, y: 12 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.92, y: 12 }}
-              style={{
-                background: "#fff", borderRadius: 20,
-                border: "2.5px solid #000",
-                boxShadow: "4px 4px 0 #000",
-                padding: "24px 20px 20px",
-                width: "100%", maxWidth: 340,
-              }}
-            >
-              {saveSuccess ? (
-                <div style={{ textAlign: "center", padding: "12px 0" }}>
-                  <div style={{ fontSize: 32, marginBottom: 8 }}>💕</div>
-                  <p style={{ fontWeight: 800, fontSize: 16, fontFamily: "var(--font-display)" }}>Collection saved!</p>
-                </div>
-              ) : (
-                <>
-                  <p style={{ fontWeight: 800, fontSize: 15, fontFamily: "var(--font-display)", marginBottom: 12 }}>
-                    Name this craft
-                  </p>
-                  <input
-                    autoFocus
-                    value={saveName}
-                    onChange={e => setSaveName(e.target.value)}
-                    onKeyDown={e => e.key === "Enter" && saveName.trim() && handleSave()}
-                    placeholder="e.g. Sunday Glow ✨"
-                    style={{
-                      width: "100%", height: 42, borderRadius: 10,
-                      border: "2px solid #000", padding: "0 12px",
-                      fontSize: 14, fontFamily: "var(--font-display)",
-                      boxSizing: "border-box", marginBottom: 12, outline: "none",
-                    }}
-                  />
-                  <div style={{ display: "flex", gap: 8 }}>
-                    <button
-                      onClick={() => setIsSaveOpen(false)}
-                      style={{
-                        flex: 1, height: 40, borderRadius: 20,
-                        border: "2px solid #000", background: "#fff",
-                        fontWeight: 700, fontSize: 13, cursor: "pointer",
-                        fontFamily: "var(--font-display)",
-                      }}
-                    >Cancel</button>
-                    <button
-                      onClick={handleSave}
-                      disabled={!saveName.trim() || saveOutfit.isPending}
-                      style={{
-                        flex: 1, height: 40, borderRadius: 20,
-                        border: "2px solid #B8894E",
-                        background: "linear-gradient(to bottom, #E8D4B0, #B8894E)",
-                        color: "#3A2210", fontWeight: 800, fontSize: 13,
-                        cursor: saveName.trim() ? "pointer" : "default",
-                        opacity: saveName.trim() ? 1 : 0.45,
-                        fontFamily: "var(--font-display)",
-                      }}
-                    >
-                      {saveOutfit.isPending ? "…" : "Save ♡"}
-                    </button>
-                  </div>
-                </>
-              )}
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* ── Modals ── */}
       <AnimatePresence>
