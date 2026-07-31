@@ -381,58 +381,42 @@ export default function WardrobePage() {
           })}
 
 
-          {/* ── LEFT: Heart/person icon → Favorites ── */}
-          <button
-            onClick={() => navigate("/favorites")}
-            data-testid="button-favorites"
-            aria-label="Go to favourites"
+          {/* ── Bottom toolbar — anchored to base of image, no fraction math ──
+               Covers the baked-in paintbrush / Save / scissors row.
+               height 13% matches the toolbar's visual height in crafts-bg.png. */}
+          <div
             style={{
               position: "absolute",
-              top:    pY(ir, 0.880),
-              left:   pX(ir, 0.06),
-              width:  pW(ir, 0.220),
-              height: pH(ir, 0.100),
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: "13%",
               zIndex: 27,
-              background: "transparent",
-              border: "none",
-              cursor: "pointer",
+              display: "flex",
             }}
-          />
-
-          {/* ── CENTER: Save → save centred items to lookbook then navigate ── */}
-          <button
-            onClick={handleDirectSave}
-            aria-label="Save to lookbook"
-            style={{
-              position: "absolute",
-              top:    pY(ir, 0.875),
-              left:   pX(ir, 0.500) - pW(ir, 0.110),
-              width:  pW(ir, 0.220),
-              height: pH(ir, 0.100),
-              zIndex: 27,
-              background: "transparent",
-              border: "none",
-              cursor: "pointer",
-              padding: 0,
-            }}
-          />
-
-          {/* ── RIGHT: Scissors icon → Plan / checkout page ── */}
-          <button
-            onClick={() => navigate("/account")}
-            aria-label="Go to plan"
-            style={{
-              position: "absolute",
-              top:    pY(ir, 0.880),
-              left:   pX(ir, 0.720),
-              width:  pW(ir, 0.220),
-              height: pH(ir, 0.100),
-              zIndex: 27,
-              background: "transparent",
-              border: "none",
-              cursor: "pointer",
-            }}
-          />
+          >
+            {/* LEFT: paintbrush → Favorites */}
+            <button
+              onClick={() => navigate("/favorites")}
+              aria-label="Go to favourites"
+              data-testid="button-favorites"
+              style={{ flex: "0 0 25%", background: "transparent", border: "none", cursor: "pointer", padding: 0 }}
+            />
+            {/* CENTER: Save → save to lookbook */}
+            <button
+              onClick={handleDirectSave}
+              aria-label="Save to lookbook"
+              data-testid="button-save"
+              style={{ flex: "1 1 50%", background: "transparent", border: "none", cursor: "pointer", padding: 0 }}
+            />
+            {/* RIGHT: scissors → Plan / account page */}
+            <button
+              onClick={() => navigate("/account")}
+              aria-label="Go to plan"
+              data-testid="button-plan"
+              style={{ flex: "0 0 25%", background: "transparent", border: "none", cursor: "pointer", padding: 0 }}
+            />
+          </div>
         </>
       )}
 
