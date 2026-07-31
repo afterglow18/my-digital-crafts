@@ -8,6 +8,11 @@
 #   APP_STORE_CONNECT_ISSUER_ID        (your issuer ID)
 #   APP_STORE_CONNECT_PRIVATE_KEY      Full .p8 file contents (mark Secure)
 #
+#   VITE_REVENUECAT_IOS_API_KEY        THIS APP'S Public Apple SDK key from
+#                                      RevenueCat dashboard → API Keys.
+#                                      Each app must use its own key — never
+#                                      share keys across different RC projects.
+#
 # Group "build_env":
 #   VITE_API_BASE_URL                  Your deployed API URL
 
@@ -47,7 +52,11 @@ workflows:
       - name: Build web assets
         script: |
           cd artifacts/outfit-generator
-          VITE_API_BASE_URL=$VITE_API_BASE_URL pnpm vite build --config vite.capacitor.config.ts
+          # Pass all VITE_ vars explicitly so each app always embeds its own
+          # correct keys — never silently fall back to another app's values.
+          VITE_API_BASE_URL=$VITE_API_BASE_URL \
+          VITE_REVENUECAT_IOS_API_KEY=$VITE_REVENUECAT_IOS_API_KEY \
+          pnpm vite build --config vite.capacitor.config.ts
 
       - name: Capacitor add iOS and sync
         script: |
