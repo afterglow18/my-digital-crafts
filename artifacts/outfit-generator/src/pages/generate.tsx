@@ -60,8 +60,13 @@ function useImageRect(ref: RefObject<HTMLDivElement>): ImgRect {
       setRect({ top: 0, left: 0, width: cW, height: cH, containerH: cH });
     };
     compute();
+    // Re-measure after the first frame — iOS dvh settles after initial paint.
+    const raf = requestAnimationFrame(compute);
     window.addEventListener("resize", compute);
-    return () => window.removeEventListener("resize", compute);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("resize", compute);
+    };
   }, [ref]);
   return rect;
 }
