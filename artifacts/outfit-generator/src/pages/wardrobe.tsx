@@ -64,10 +64,10 @@ const LM = {
   doorR: 0.791,   // +0.015 vs previous
 
   rows: [
-    { sectionTop: 0.147, shelfY: 0.265, btnCY: 0.120 },  // ART SUPPLIES   (-0.020)
-    { sectionTop: 0.315, shelfY: 0.432, btnCY: 0.288 },  // CRAFT SUPPLIES (-0.020)
-    { sectionTop: 0.482, shelfY: 0.599, btnCY: 0.455 },  // PROJECTS       (-0.020)
-    { sectionTop: 0.649, shelfY: 0.767, btnCY: 0.622 },  // STORAGE        (-0.020)
+    { sectionTop: 0.147, shelfY: 0.291, btnCY: 0.120 },  // ART SUPPLIES   (section 0.144)
+    { sectionTop: 0.306, shelfY: 0.450, btnCY: 0.279 },  // CRAFT SUPPLIES (gap 0.015)
+    { sectionTop: 0.465, shelfY: 0.609, btnCY: 0.438 },  // PROJECTS
+    { sectionTop: 0.624, shelfY: 0.768, btnCY: 0.597 },  // STORAGE
   ],
 
   saveAreaY: 0.84,
