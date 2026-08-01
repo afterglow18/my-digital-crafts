@@ -3,7 +3,7 @@
  *
  * Full-screen paywall shown when the user taps the Mannequin button without a
  * premium entitlement. Pitches the Pro Stylist upgrade specifically, while
- * noting that the $4.99 Unlock Forever plan is available if they only want
+ * noting that the $9.99 Unlock Forever plan is available if they only want
  * unlimited items/outfits.
  */
 import React, { useState, useCallback } from "react";
@@ -136,7 +136,7 @@ export function PremiumSheet({ onClose }: Props) {
                      active:translate-x-0.5 active:translate-y-0.5 active:shadow-none
                      disabled:opacity-60 disabled:cursor-not-allowed transition-all"
         >
-          {pending === "unlock" ? "Opening checkout…" : "Or get Unlock Forever – $4.99 (no mannequin)"}
+          {pending === "unlock" ? "Opening checkout…" : "Or get Unlock Forever – $9.99 (no mannequin)"}
         </button>
 
         {error && (

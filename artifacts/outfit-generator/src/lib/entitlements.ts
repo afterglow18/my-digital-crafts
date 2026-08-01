@@ -3,7 +3,7 @@
  *
  * Tiers:
  *   "free"    — default; up to FREE_ITEM_LIMIT items, FREE_OUTFIT_LIMIT saved outfits.
- *   "unlock"  — $4.99 one-time; unlimited items + outfits, no 3D mannequin.
+ *   "unlock"  — $9.99 one-time; unlimited items + outfits, no 3D mannequin.
  *   "premium" — optional upgrade; everything in unlock + 3D mannequin.
  */
 
@@ -32,6 +32,6 @@ export const TIER_CAPS: Record<Tier, TierCapabilities> = {
 export type PurchaseProduct = "unlock" | "premium";
 
 export const PRODUCT_PRICES: Record<PurchaseProduct, string> = {
-  unlock:  "$4.99",
+  unlock:  "$9.99",
   premium: "$9.99",
 };
