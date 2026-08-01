@@ -301,7 +301,7 @@ export default function GeneratePage() {
                 textTransform: "uppercase",
                 color: "#8C4F48",
                 lineHeight: 1.2,
-                marginTop: 14,
+                marginTop: 26,
                 textShadow: "0 1px 6px rgba(0,0,0,0.18)",
               }}>
                 MATCHMAKER
