@@ -179,8 +179,7 @@ export default function WardrobePage() {
       .filter((i): i is ClothingItem => i != null)
       .map(i => i.id);
     if (itemIds.length === 0) { navigate("/saved"); return; }
-    // Open name prompt with a sensible default the user can edit.
-    setSaveName(new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }));
+    setSaveName("");
     setSavePromptOpen(true);
   }, [centred, navigate]);
 
@@ -490,7 +489,7 @@ export default function WardrobePage() {
                 value={saveName}
                 onChange={e => setSaveName(e.target.value)}
                 onKeyDown={e => e.key === "Enter" && handleConfirmSave()}
-                placeholder="e.g. Craft Box, Summer Project…"
+                placeholder="e.g. Painting"
                 maxLength={60}
                 style={{
                   width: "100%",
