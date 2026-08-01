@@ -39,11 +39,6 @@ type Category = "outfits" | "beauty" | "toiletries" | "essentials";
 // Per spec: do NOT wrap phase blocks in AnimatePresence — use plain conditional divs.
 type Phase = "pick" | "encoding" | "preview" | "uploading";
 
-interface UploadProgress {
-  current: number;
-  total:   number;
-}
-
 // ── Capacitor camera helper ────────────────────────────────────────────────────
 
 function dataUrlToFile(dataUrl: string, filename: string): File {
@@ -234,7 +229,11 @@ export function QuickAddSheet({ open, onOpenChange, category, existingCount, onC
   // ── Phase & error ───────────────────────────────────────────────────────────
   const [phase,    setPhase]   = useState<Phase>("pick");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [progress, setProgress] = useState<UploadProgress | null>(null);
+
+  // ── Batch queue (multi-select → one-at-a-time compare flow) ─────────────────
+  const batchFilesRef = useRef<File[]>([]);
+  const [batchTotal,  setBatchTotal]  = useState(0);
+  const [batchIndex,  setBatchIndex]  = useState(0);
 
   // ── BG removal state ────────────────────────────────────────────────────────
   const [originalBlob, setOriginalBlob] = useState<Blob | null>(null);
@@ -270,7 +269,9 @@ export function QuickAddSheet({ open, onOpenChange, category, existingCount, onC
     setBgFailed(false);
     setSelected("original");
     setBgModelPct(null);
-    setProgress(null);
+    batchFilesRef.current = [];
+    setBatchTotal(0);
+    setBatchIndex(0);
     onOpenChange(false);
   }, [onOpenChange]);
 
@@ -332,88 +333,89 @@ export function QuickAddSheet({ open, onOpenChange, category, existingCount, onC
     }
   }, []);
 
-  // ── Save selected version ───────────────────────────────────────────────────
+  // ── Batch: advance to next photo or close when all done ─────────────────────
+  const doAdvance = useCallback((currentIdx: number) => {
+    const files = batchFilesRef.current;
+    const nextIdx = currentIdx + 1;
+    if (nextIdx < files.length) {
+      setBatchIndex(nextIdx);
+      handleFile(files[nextIdx]);
+    } else {
+      batchFilesRef.current = [];
+      setBatchTotal(0);
+      setBatchIndex(0);
+      handleClose();
+    }
+  }, [handleFile, handleClose]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Shared item-save helper ──────────────────────────────────────────────────
+  const saveBlob = useCallback(async (blob: Blob, idxInBatch: number): Promise<void> => {
+    const dataUrl  = await blobToIndexedDbDataUrl(blob);
+    const label    = categoryNames[category as CategoryKey];
+    const n        = existingCount + idxInBatch;
+    const autoName = n === 0 ? label : `${label} ${n + 1}`;
+    return new Promise<void>((resolve, reject) => {
+      createItem.mutate(
+        { data: { name: autoName, category, imageObjectPath: dataUrl } },
+        {
+          onSuccess: (createdItem) => {
+            queryClient.invalidateQueries({ queryKey: getListClothingQueryKey() });
+            queryClient.invalidateQueries({ queryKey: getWardrobeStatsQueryKey() });
+            if (onCreated) onCreated(createdItem);
+            resolve();
+          },
+          onError: reject,
+        },
+      );
+    });
+  }, [category, existingCount, createItem, queryClient, onCreated]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Save cleaned (or original if cleaned not ready) ─────────────────────────
   const handleSave = useCallback(async () => {
     const blob = selected === "cleaned" && cleanedBlob ? cleanedBlob : originalBlob;
     if (!blob) return;
     setPhase("uploading");
     try {
-      const dataUrl  = await blobToIndexedDbDataUrl(blob);
-      const label    = categoryNames[category as CategoryKey];
-      const autoName = existingCount === 0 ? label : `${label} ${existingCount + 1}`;
-      await new Promise<void>((resolve, reject) => {
-        createItem.mutate(
-          { data: { name: autoName, category, imageObjectPath: dataUrl } },
-          {
-            onSuccess: (createdItem) => {
-              queryClient.invalidateQueries({ queryKey: getListClothingQueryKey() });
-              queryClient.invalidateQueries({ queryKey: getWardrobeStatsQueryKey() });
-              if (onCreated) onCreated(createdItem);
-              resolve();
-            },
-            onError: reject,
-          },
-        );
-      });
-      handleClose();
+      await saveBlob(blob, batchIndex);
+      if (batchTotal > 1) doAdvance(batchIndex); else handleClose();
     } catch (err) {
       setErrorMsg(`Save failed: ${err instanceof Error ? err.message : String(err)}`);
       setPhase("preview");
     }
-  }, [selected, cleanedBlob, originalBlob, category, existingCount, createItem, queryClient, onCreated, handleClose]);
+  }, [selected, cleanedBlob, originalBlob, batchIndex, batchTotal, saveBlob, doAdvance, handleClose]);
 
-  // ── Multi-file batch (gallery multi-select): skip BG removal ───────────────
-  const saveOneFile = useCallback(async (file: File, itemIndex: number): Promise<boolean> => {
-    let png: Blob;
-    try {
-      png = await encodeToPng(file);
-    } catch {
-      return false;
-    }
-    try {
-      const dataUrl  = await blobToJpegDataUrl(png);
-      const label    = categoryNames[category as CategoryKey];
-      const n        = itemIndex + 1;
-      const autoName = n === 1 ? label : `${label} ${n}`;
-      await new Promise<void>((resolve, reject) => {
-        createItem.mutate(
-          { data: { name: autoName, category, imageObjectPath: dataUrl } },
-          {
-            onSuccess: (createdItem) => {
-              queryClient.invalidateQueries({ queryKey: getListClothingQueryKey() });
-              queryClient.invalidateQueries({ queryKey: getWardrobeStatsQueryKey() });
-              if (onCreated) onCreated(createdItem);
-              resolve();
-            },
-            onError: reject,
-          },
-        );
-      });
-      return true;
-    } catch {
-      return false;
-    }
-  }, [category, createItem, queryClient, onCreated]);
-
-  const handleFiles = useCallback(async (files: File[]) => {
-    if (!files.length) return;
-    setErrorMsg(null);
+  // ── Save original — skip background removal entirely ────────────────────────
+  const handleSaveOriginal = useCallback(async () => {
+    if (!originalBlob) return;
+    bgGenRef.current++;        // cancel any in-flight BG removal
+    setBgProcessing(false);
     setPhase("uploading");
-    setProgress({ current: 0, total: files.length });
-    let failed = 0;
-    for (let i = 0; i < files.length; i++) {
-      setProgress({ current: i + 1, total: files.length });
-      const ok = await saveOneFile(files[i], existingCount + i);
-      if (!ok) failed++;
+    try {
+      await saveBlob(originalBlob, batchIndex);
+      if (batchTotal > 1) doAdvance(batchIndex); else handleClose();
+    } catch (err) {
+      setErrorMsg(`Save failed: ${err instanceof Error ? err.message : String(err)}`);
+      setPhase("preview");
     }
-    setProgress(null);
-    if (failed > 0) {
-      setErrorMsg(`${failed} photo${failed > 1 ? "s" : ""} could not be saved. Please try again.`);
-      setPhase("pick");
-    } else {
-      handleClose();
-    }
-  }, [saveOneFile, existingCount, handleClose]);
+  }, [originalBlob, batchIndex, batchTotal, saveBlob, doAdvance, handleClose]);
+
+  // ── Skip this photo in the batch without saving ──────────────────────────────
+  const handleSkip = useCallback(() => {
+    bgGenRef.current++;
+    setBgProcessing(false);
+    if (batchTotal > 1) doAdvance(batchIndex); else setPhase("pick");
+  }, [batchTotal, batchIndex, doAdvance]);
+
+  // ── Multi-select: queue files, run each through compare screen ───────────────
+  const handleFiles = useCallback((files: File[]) => {
+    if (!files.length) return;
+    if (files.length === 1) { handleFile(files[0]); return; }
+    setErrorMsg(null);
+    batchFilesRef.current = files;
+    setBatchTotal(files.length);
+    setBatchIndex(0);
+    handleFile(files[0]);
+  }, [handleFile]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Photo picker handlers ───────────────────────────────────────────────────
   // On iOS (Capacitor) use the Camera plugin — HTML file inputs crash WKWebView.
@@ -497,7 +499,11 @@ export function QuickAddSheet({ open, onOpenChange, category, existingCount, onC
         style={{ paddingTop: "max(0.75rem, env(safe-area-inset-top))", paddingBottom: "0.75rem" }}
       >
         <h2 className="font-display font-bold text-xl uppercase tracking-tight text-[#3A2210]">
-          {phase === "preview" ? "Choose Version" : `Add ${label}`}
+          {batchTotal > 1
+            ? `Photo ${batchIndex + 1} of ${batchTotal}`
+            : phase === "preview"
+            ? "Choose Version"
+            : `Add ${label}`}
         </h2>
         {(phase === "pick" || phase === "preview") && (
           <button
@@ -725,32 +731,49 @@ export function QuickAddSheet({ open, onOpenChange, category, existingCount, onC
             </div>
 
             {/* Actions */}
-            <div className="flex gap-3 mt-1">
+            <div className="flex flex-col gap-2 mt-1">
+
+              {/* Row 1: two primary save actions */}
+              <div className="flex gap-2">
+                {/* Save Original — always instantly available */}
+                <button
+                  onClick={handleSaveOriginal}
+                  disabled={!originalBlob}
+                  className="flex-1 py-3 rounded-xl border-2 border-[#8C4F48]/60
+                             font-display font-bold text-sm uppercase tracking-tight
+                             bg-[#fdf8f0] text-[#8C4F48]
+                             shadow-[2px_2px_0px_0px_rgba(140,79,72,0.25)]
+                             active:translate-x-0.5 active:translate-y-0.5 active:shadow-none
+                             disabled:opacity-40 transition-all"
+                >
+                  Save Original
+                </button>
+
+                {/* Save Cleaned — waits for BG removal */}
+                <button
+                  onClick={handleSave}
+                  disabled={bgProcessing || !cleanedUrl}
+                  className="flex-1 py-3 rounded-xl border-2 border-[#8C4F48]
+                             font-display font-bold text-sm uppercase tracking-tight
+                             bg-[#8C4F48] text-[#F5E8D8]
+                             shadow-[0_4px_12px_rgba(140,79,72,0.4)]
+                             active:opacity-90
+                             disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                >
+                  {bgProcessing ? "Cleaning…" : cleanedUrl ? "✨ Save Cleaned" : bgFailed ? "Cleaning Failed" : "Cleaning…"}
+                </button>
+              </div>
+
+              {/* Row 2: retake / skip */}
               <button
-                onClick={() => setPhase("pick")}
-                className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl
-                           border-2 border-[#8C4F48]/40 bg-[#fdf8f0] text-[#3A2210] font-display font-bold text-sm uppercase
-                           tracking-tight shadow-[2px_2px_0px_0px_rgba(140,79,72,0.25)]
-                           active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all"
+                onClick={handleSkip}
+                className="flex items-center justify-center gap-2 py-2 rounded-xl
+                           border border-[#8C4F48]/25 bg-transparent text-[#8C4F48]/70
+                           font-display font-bold text-xs uppercase tracking-tight
+                           active:opacity-70 transition-all"
               >
-                <RotateCcw className="w-4 h-4" />
-                Retake
-              </button>
-              <button
-                onClick={handleSave}
-                disabled={bgProcessing && selected === "cleaned"}
-                className="flex-1 py-3 rounded-xl border-2 border-[#8C4F48]
-                           font-display font-bold text-sm uppercase tracking-tight
-                           bg-[#8C4F48] text-[#F5E8D8]
-                           shadow-[0_4px_12px_rgba(140,79,72,0.4)]
-                           active:opacity-90
-                           disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-              >
-                {bgProcessing && selected === "cleaned"
-                  ? "Processing…"
-                  : selected === "cleaned" && cleanedUrl
-                  ? "✓ Save Cleaned Version"
-                  : "✓ Save to Crafts"}
+                <RotateCcw className="w-3 h-3" />
+                {batchTotal > 1 ? "Skip This Photo" : "Retake"}
               </button>
             </div>
           </div>
@@ -767,8 +790,8 @@ export function QuickAddSheet({ open, onOpenChange, category, existingCount, onC
             <div className="text-center">
               <p className="font-display font-bold text-2xl uppercase tracking-tight">Saving…</p>
               <p className="text-sm text-black/50 mt-1">
-                {progress && progress.total > 1
-                  ? `Photo ${progress.current} of ${progress.total}`
+                {batchTotal > 1
+                  ? `Photo ${batchIndex + 1} of ${batchTotal}`
                   : "Adding to your crafts."}
               </p>
             </div>
