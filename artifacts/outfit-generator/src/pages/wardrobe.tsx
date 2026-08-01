@@ -64,10 +64,10 @@ const LM = {
   doorR: 0.791,   // +0.015 vs previous
 
   rows: [
-    { sectionTop: 0.147, shelfY: 0.291, btnCY: 0.120 },  // ART SUPPLIES   (section 0.144)
-    { sectionTop: 0.306, shelfY: 0.450, btnCY: 0.279 },  // CRAFT SUPPLIES (gap 0.015)
-    { sectionTop: 0.465, shelfY: 0.609, btnCY: 0.438 },  // PROJECTS
-    { sectionTop: 0.624, shelfY: 0.768, btnCY: 0.597 },  // STORAGE
+    { sectionTop: 0.167, shelfY: 0.285, btnCY: 0.140 },  // ART SUPPLIES   — matches generate page
+    { sectionTop: 0.335, shelfY: 0.452, btnCY: 0.308 },  // CRAFT SUPPLIES
+    { sectionTop: 0.502, shelfY: 0.619, btnCY: 0.475 },  // PROJECTS
+    { sectionTop: 0.669, shelfY: 0.787, btnCY: 0.642 },  // STORAGE (ends at 0.787, save bar at 0.84)
   ],
 
   saveAreaY: 0.84,
@@ -267,7 +267,7 @@ export default function WardrobePage() {
               aria-label={`${totalItems} of ${FREE_ITEM_LIMIT} items used — tap to upgrade`}
               style={{
                 position: "absolute",
-                top: `calc(${pY(ir, 0.068)}px )`, left: "50%", transform: "translateX(-50%)",
+                top: `calc(${pY(ir, 0.042)}px )`, left: "50%", transform: "translateX(-50%)",
                 zIndex: 25,
                 padding: "2px 8px", borderRadius: 20, border: "none",
                 background: totalItems >= FREE_ITEM_LIMIT
