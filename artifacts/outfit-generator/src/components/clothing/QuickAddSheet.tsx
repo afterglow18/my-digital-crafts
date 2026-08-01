@@ -764,17 +764,19 @@ export function QuickAddSheet({ open, onOpenChange, category, existingCount, onC
                 </button>
               </div>
 
-              {/* Row 2: retake / skip */}
-              <button
-                onClick={handleSkip}
-                className="flex items-center justify-center gap-2 py-2 rounded-xl
-                           border border-[#8C4F48]/25 bg-transparent text-[#8C4F48]/70
-                           font-display font-bold text-xs uppercase tracking-tight
-                           active:opacity-70 transition-all"
-              >
-                <RotateCcw className="w-3 h-3" />
-                {batchTotal > 1 ? "Skip This Photo" : "Retake"}
-              </button>
+              {/* Row 2: retake (single only — in batch mode the X header cancels) */}
+              {batchTotal <= 1 && (
+                <button
+                  onClick={() => setPhase("pick")}
+                  className="flex items-center justify-center gap-2 py-2 rounded-xl
+                             border border-[#8C4F48]/25 bg-transparent text-[#8C4F48]/70
+                             font-display font-bold text-xs uppercase tracking-tight
+                             active:opacity-70 transition-all"
+                >
+                  <RotateCcw className="w-3 h-3" />
+                  Retake
+                </button>
+              )}
             </div>
           </div>
         )}
