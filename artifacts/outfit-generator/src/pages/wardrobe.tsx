@@ -170,18 +170,31 @@ export default function WardrobePage() {
 
   const [, navigate] = useLocation();
 
-  // Save the currently-centred items directly to the lookbook, then navigate there.
+  // ── Save-name prompt ─────────────────────────────────────────────────────
+  const [savePromptOpen, setSavePromptOpen] = useState(false);
+  const [saveName, setSaveName] = useState("");
+
   const handleDirectSave = useCallback(() => {
     const itemIds = Object.values(centred)
       .filter((i): i is ClothingItem => i != null)
       .map(i => i.id);
     if (itemIds.length === 0) { navigate("/saved"); return; }
-    const name = new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+    // Open name prompt with a sensible default the user can edit.
+    setSaveName(new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }));
+    setSavePromptOpen(true);
+  }, [centred, navigate]);
+
+  const handleConfirmSave = useCallback(() => {
+    const itemIds = Object.values(centred)
+      .filter((i): i is ClothingItem => i != null)
+      .map(i => i.id);
+    const name = saveName.trim() || new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+    setSavePromptOpen(false);
     saveOutfit.mutate(
       { data: { name, itemIds } },
       { onSuccess: () => { queryClient.invalidateQueries({ queryKey: getListOutfitsQueryKey() }); navigate("/saved"); } },
     );
-  }, [centred, saveOutfit, queryClient, navigate]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [centred, saveName, saveOutfit, queryClient, navigate]);
   const isFree    = tier === "free";
   const itemsLeft = isFree ? Math.max(0, FREE_ITEM_LIMIT - totalItems) : null;
   const ready     = ir.width > 0;
@@ -419,6 +432,118 @@ export default function WardrobePage() {
           </div>
         </>
       )}
+
+      {/* ── Save-name prompt modal ── */}
+      <AnimatePresence>
+        {savePromptOpen && (
+          <motion.div
+            key="save-prompt"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{
+              position: "fixed", inset: 0, zIndex: 80,
+              background: "rgba(0,0,0,0.45)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              padding: "0 28px",
+            }}
+            onClick={() => setSavePromptOpen(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.92, opacity: 0 }}
+              animate={{ scale: 1,    opacity: 1 }}
+              exit={{ scale: 0.92,    opacity: 0 }}
+              transition={{ type: "spring", damping: 22, stiffness: 280 }}
+              onClick={e => e.stopPropagation()}
+              style={{
+                background: "#F9F4EE",
+                borderRadius: 18,
+                padding: "28px 24px 20px",
+                width: "100%",
+                maxWidth: 340,
+                boxShadow: "0 8px 32px rgba(0,0,0,0.22)",
+                display: "flex", flexDirection: "column", gap: 16,
+              }}
+            >
+              {/* Header */}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <span style={{
+                  fontFamily: "var(--font-display)",
+                  fontSize: 18, fontWeight: 700,
+                  color: "#5C3A2E",
+                  letterSpacing: "0.04em",
+                }}>
+                  Name Your Craft Box
+                </span>
+                <button
+                  onClick={() => setSavePromptOpen(false)}
+                  style={{ background: "none", border: "none", cursor: "pointer", padding: 4, color: "#9C7B6B" }}
+                  aria-label="Cancel"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              {/* Text input */}
+              <input
+                autoFocus
+                value={saveName}
+                onChange={e => setSaveName(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && handleConfirmSave()}
+                placeholder="e.g. Craft Box, Summer Project…"
+                maxLength={60}
+                style={{
+                  width: "100%",
+                  padding: "10px 14px",
+                  borderRadius: 10,
+                  border: "1.5px solid rgba(140,79,72,0.30)",
+                  background: "#fff",
+                  fontSize: 15,
+                  color: "#3D2218",
+                  fontFamily: "inherit",
+                  outline: "none",
+                  boxSizing: "border-box",
+                }}
+              />
+
+              {/* Buttons */}
+              <div style={{ display: "flex", gap: 10 }}>
+                <button
+                  onClick={() => setSavePromptOpen(false)}
+                  style={{
+                    flex: 1,
+                    padding: "11px 0",
+                    borderRadius: 12,
+                    border: "1.5px solid rgba(140,79,72,0.25)",
+                    background: "transparent",
+                    color: "#8C4F48",
+                    fontSize: 14, fontWeight: 600,
+                    cursor: "pointer",
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleConfirmSave}
+                  style={{
+                    flex: 2,
+                    padding: "11px 0",
+                    borderRadius: 12,
+                    border: "none",
+                    background: "#8C4F48",
+                    color: "#F9F4EE",
+                    fontSize: 14, fontWeight: 700,
+                    cursor: "pointer",
+                    letterSpacing: "0.04em",
+                  }}
+                >
+                  Save
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ── Modals ── */}
       <AnimatePresence>
