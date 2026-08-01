@@ -54,6 +54,19 @@ async function getPurchases(): Promise<PurchasesType | null> {
   }
 }
 
+// ── Helpers ───────────────────────────────────────────────────────────────────
+// RC Capacitor v13 configure() returns CustomerInfo (a network call), so
+// awaiting it without a timeout blocks indefinitely when RC servers are slow.
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error("timed out")), ms);
+    promise.then(
+      (v) => { clearTimeout(t); resolve(v); },
+      (e) => { clearTimeout(t); reject(e); },
+    );
+  });
+}
+
 // ── Initialization ────────────────────────────────────────────────────────────
 // Cached promise so every caller awaits the same single configure() call.
 // Re-entrancy safe: calling initializeRevenueCat() twice returns the same promise.
@@ -73,7 +86,15 @@ export function initializeRevenueCat(): Promise<void> {
       await Purchases.setLogLevel({ level: LOG_LEVEL.DEBUG });
     } catch { /* non-fatal */ }
 
-    await Purchases.configure({ apiKey });
+    // 5 s timeout: configure() in v13 awaits a CustomerInfo network call.
+    // A timeout here means RC servers are slow but the SDK is ready — not fatal.
+    try {
+      await withTimeout(Purchases.configure({ apiKey }), 5_000);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      if (!msg.includes("timed out")) throw e;
+      // timed out waiting for CustomerInfo fetch — SDK is configured, carry on
+    }
     console.log("[RevenueCat] Configured");
   })().catch((err) => {
     // Reset so the next call retries (e.g. after a transient failure).
