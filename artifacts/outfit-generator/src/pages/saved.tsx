@@ -14,7 +14,7 @@ import { getImageUrl } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEntitlements } from "@/hooks/useEntitlements";
 import { UpgradeSheet } from "@/components/paywall/UpgradeSheet";
-import { FREE_OUTFIT_LIMIT } from "@/lib/entitlements";
+import { FREE_COLLECTION_LIMIT } from "@/lib/entitlements";
 import { WardrobePickerSheet } from "@/components/clothing/WardrobePickerSheet";
 import { ItemDetailsSheet } from "@/components/clothing/ItemDetailsSheet";
 import { useCategoryNames, type CategoryKey } from "@/contexts/CategoryNamesContext";
@@ -121,7 +121,7 @@ export default function SavedPage() {
 
   const isFree = tier === "free";
   const outfitCount = outfits?.length ?? 0;
-  const atLimit = isFree && outfitCount >= FREE_OUTFIT_LIMIT;
+  const atLimit = isFree && outfitCount >= FREE_COLLECTION_LIMIT;
 
   const handleDelete = (id: number) => {
     deleteOutfit.mutate(
@@ -169,12 +169,12 @@ export default function SavedPage() {
                           border-2 transition-colors
                           ${atLimit
                             ? "bg-black text-white border-black"
-                            : outfitCount >= FREE_OUTFIT_LIMIT - 1
+                            : outfitCount >= FREE_COLLECTION_LIMIT - 1
                             ? "bg-primary border-black text-black"
                             : "bg-white border-black/20 text-black/40 hover:border-black/40"
                           }`}
             >
-              {outfitCount}/{FREE_OUTFIT_LIMIT} saved
+              {outfitCount}/{FREE_COLLECTION_LIMIT} saved
             </button>
           )}
         </div>
@@ -191,7 +191,7 @@ export default function SavedPage() {
             🔓 Collections full
           </p>
           <p className="text-xs text-black/60 mt-1 mb-3 leading-snug">
-            You've saved {FREE_OUTFIT_LIMIT} collections — the free limit.
+            You've saved {FREE_COLLECTION_LIMIT} collections — the free limit.
             Unlock Forever to save unlimited collections.
           </p>
           <button
@@ -420,7 +420,7 @@ export default function SavedPage() {
       {/* Upgrade sheet */}
       <AnimatePresence>
         {showUpgrade && (
-          <UpgradeSheet reason="outfits" onClose={() => setShowUpgrade(false)} />
+          <UpgradeSheet reason="collections" onClose={() => setShowUpgrade(false)} />
         )}
       </AnimatePresence>
 

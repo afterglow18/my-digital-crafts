@@ -6,8 +6,8 @@
  * of localStorage + Stripe Checkout.
  *
  * Tier mapping:
- *   no active entitlement  → "free"  (up to 20 items, 5 outfits)
- *   "premium" entitlement  → "unlock" (unlimited items + outfits)
+ *   no active entitlement  → "free"   (up to 20 items, 5 saved collections)
+ *   any active entitlement → "unlock" (unlimited items + collections)
  *
  * PurchaseResult:
  *   "success"     — subscription activated
@@ -19,17 +19,16 @@ import { Tier, TIER_CAPS, TierCapabilities } from "@/lib/entitlements";
 import { useSubscription } from "@/lib/revenuecat";
 
 export type PurchaseResult = "success" | "cancelled" | "unavailable";
-export type PurchaseProduct = "unlock" | "premium"; // kept for call-site compat
+export type PurchaseProduct = "unlock"; // kept for call-site compat
 
 // setGlobalTier is no longer needed (RC manages state) but keep the export so
-// App.tsx doesn't need special-casing if any old import remains.
+// any old import doesn't break.
 export function setGlobalTier(_t: Tier): void { /* no-op */ }
 
 export function useEntitlements() {
   const { isSubscribed, offerings, purchase: rcPurchase, isPurchasing } =
     useSubscription();
 
-  // Both "unlock" and "premium" products now map to the RC "unlock" tier.
   const tier: Tier = isSubscribed ? "unlock" : "free";
   const caps: TierCapabilities = TIER_CAPS[tier];
 
@@ -38,9 +37,9 @@ export function useEntitlements() {
     [caps.maxItems],
   );
 
-  const canSaveOutfit = useCallback(
-    (count: number) => caps.maxOutfits === null || count < caps.maxOutfits,
-    [caps.maxOutfits],
+  const canSaveCollection = useCallback(
+    (count: number) => caps.maxCollections === null || count < caps.maxCollections,
+    [caps.maxCollections],
   );
 
   const purchase = useCallback(
@@ -64,5 +63,5 @@ export function useEntitlements() {
     [offerings, rcPurchase],
   );
 
-  return { tier, caps, canAddItem, canSaveOutfit, purchase, isPurchasing };
+  return { tier, caps, canAddItem, canSaveCollection, purchase, isPurchasing };
 }

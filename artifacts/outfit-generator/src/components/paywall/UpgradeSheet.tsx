@@ -14,7 +14,7 @@ import { motion } from "framer-motion";
 import { X, Check } from "lucide-react";
 import { useSubscription } from "@/lib/revenuecat";
 
-export type UpgradeReason = "items" | "outfits" | "mannequin";
+export type UpgradeReason = "items" | "collections";
 type TierId = "monthly" | "yearly" | "lifetime";
 
 interface Props {
@@ -33,15 +33,13 @@ const FEATURES = [
 ] as const;
 
 const HEADLINES: Record<UpgradeReason, string> = {
-  items:     "UNLOCK YOUR UNLIMITED DIGITAL CRAFTS",
-  outfits:   "UNLOCK YOUR UNLIMITED DIGITAL CRAFTS",
-  mannequin: "UNLOCK YOUR UNLIMITED DIGITAL CRAFTS",
+  items:       "UNLOCK YOUR UNLIMITED DIGITAL CRAFTS",
+  collections: "UNLOCK YOUR UNLIMITED DIGITAL CRAFTS",
 };
 
 const SUBTITLES: Record<UpgradeReason, string> = {
-  items:     "You've reached the free 20 item limit.\nUpgrade once, store everything.",
-  outfits:   "You've hit the free limit. Upgrade to save every collection.",
-  mannequin: "A premium feature — unlock it once.",
+  items:       "You've reached the free 20 item limit.\nUpgrade once, store everything.",
+  collections: "You've hit the free limit. Upgrade to save every collection.",
 };
 
 // Fallback tier defs (browser — RC not available)

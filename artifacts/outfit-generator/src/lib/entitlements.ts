@@ -2,36 +2,31 @@
  * Entitlement tier definitions — single source of truth for limits and capabilities.
  *
  * Tiers:
- *   "free"    — default; up to FREE_ITEM_LIMIT items, FREE_OUTFIT_LIMIT saved outfits.
- *   "unlock"  — $9.99 one-time; unlimited items + outfits, no 3D mannequin.
- *   "premium" — optional upgrade; everything in unlock + 3D mannequin.
+ *   "free"   — default; up to FREE_ITEM_LIMIT items, FREE_COLLECTION_LIMIT saved collections.
+ *   "unlock" — $9.99 one-time (or subscription); unlimited items + collections.
  */
 
-export type Tier = "free" | "unlock" | "premium";
+export type Tier = "free" | "unlock";
 
 /** Adjust these constants to run promotions or A/B tests without touching logic. */
-export const FREE_ITEM_LIMIT   = 20;
-export const FREE_OUTFIT_LIMIT = 5;
+export const FREE_ITEM_LIMIT       = 20;
+export const FREE_COLLECTION_LIMIT = 5;
 
 export interface TierCapabilities {
-  /** Maximum clothing items, or null for unlimited. */
-  maxItems:   number | null;
-  /** Maximum saved outfits, or null for unlimited. */
-  maxOutfits: number | null;
-  /** Access to the interactive 3D mannequin view. */
-  mannequin:  boolean;
+  /** Maximum craft items, or null for unlimited. */
+  maxItems:       number | null;
+  /** Maximum saved collections, or null for unlimited. */
+  maxCollections: number | null;
 }
 
 export const TIER_CAPS: Record<Tier, TierCapabilities> = {
-  free:    { maxItems: FREE_ITEM_LIMIT,  maxOutfits: FREE_OUTFIT_LIMIT, mannequin: false },
-  unlock:  { maxItems: null,             maxOutfits: null,              mannequin: false },
-  premium: { maxItems: null,             maxOutfits: null,              mannequin: true  },
+  free:   { maxItems: FREE_ITEM_LIMIT,  maxCollections: FREE_COLLECTION_LIMIT },
+  unlock: { maxItems: null,             maxCollections: null                  },
 };
 
 /** Products available for purchase. */
-export type PurchaseProduct = "unlock" | "premium";
+export type PurchaseProduct = "unlock";
 
 export const PRODUCT_PRICES: Record<PurchaseProduct, string> = {
-  unlock:  "$9.99",
-  premium: "$9.99",
+  unlock: "$9.99",
 };
