@@ -60,14 +60,14 @@ const NAV_H = 90;
 // 4 zones of equal height (~0.167 each), heading at zone top, photos below.
 // doorL/doorR:  left/right edges of the canvas face.
 const LM = {
-  doorL: 0.182,
-  doorR: 0.776,
+  doorL: 0.197,   // +0.015 vs previous — centres content on the canvas face
+  doorR: 0.791,   // +0.015 vs previous
 
   rows: [
-    { sectionTop: 0.167, shelfY: 0.285, btnCY: 0.140 },  // ART SUPPLIES
-    { sectionTop: 0.335, shelfY: 0.452, btnCY: 0.308 },  // CRAFT SUPPLIES
-    { sectionTop: 0.502, shelfY: 0.619, btnCY: 0.475 },  // PROJECTS
-    { sectionTop: 0.669, shelfY: 0.787, btnCY: 0.642 },  // STORAGE
+    { sectionTop: 0.147, shelfY: 0.265, btnCY: 0.120 },  // ART SUPPLIES   (-0.020)
+    { sectionTop: 0.315, shelfY: 0.432, btnCY: 0.288 },  // CRAFT SUPPLIES (-0.020)
+    { sectionTop: 0.482, shelfY: 0.599, btnCY: 0.455 },  // PROJECTS       (-0.020)
+    { sectionTop: 0.649, shelfY: 0.767, btnCY: 0.622 },  // STORAGE        (-0.020)
   ],
 
   saveAreaY: 0.84,
@@ -255,7 +255,7 @@ export default function WardrobePage() {
               aria-label={`${totalItems} of ${FREE_ITEM_LIMIT} items used — tap to upgrade`}
               style={{
                 position: "absolute",
-                top: `calc(${pY(ir, 0.096)}px )`, left: "50%", transform: "translateX(-50%)",
+                top: `calc(${pY(ir, 0.068)}px )`, left: "50%", transform: "translateX(-50%)",
                 zIndex: 25,
                 padding: "2px 8px", borderRadius: 20, border: "none",
                 background: totalItems >= FREE_ITEM_LIMIT
