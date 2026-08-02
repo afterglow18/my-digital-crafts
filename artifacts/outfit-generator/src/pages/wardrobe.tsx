@@ -427,10 +427,10 @@ export default function WardrobePage() {
               data-testid="button-save"
               style={{ flex: "1 1 50%", background: "transparent", border: "none", cursor: "pointer", padding: 0 }}
             />
-            {/* RIGHT: scissors → Plan / account page */}
+            {/* RIGHT: scissors → always open price sheet */}
             <button
-              onClick={() => navigate("/account")}
-              aria-label="Go to plan"
+              onClick={() => setUpgradeReason("items")}
+              aria-label="View plan"
               data-testid="button-plan"
               style={{ flex: "0 0 25%", background: "transparent", border: "none", cursor: "pointer", padding: 0 }}
             />
