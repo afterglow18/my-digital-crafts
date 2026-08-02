@@ -14,7 +14,6 @@
  */
 
 import { Capacitor } from "@capacitor/core";
-import { toast } from "sonner";
 import { listClothing, getClothingItem, updateClothingItem } from "./localDB";
 import { extractColorsFromDataUrl, analyzeImageNative } from "./visionExtractor";
 import type { ClothingItem } from "./db";
@@ -109,15 +108,9 @@ export async function startVisionIndexer(): Promise<void> {
 
     if (needsIndex.length === 0) return;
 
-    const toastId = toast.loading("Preparing photo search…", { duration: Infinity });
-
-    try {
-      for (const item of needsIndex) {
-        await processOne(item);
-        await delay(350);
-      }
-    } finally {
-      toast.dismiss(toastId);
+    for (const item of needsIndex) {
+      await processOne(item);
+      await delay(350);
     }
   } catch (err) {
     console.warn("[VisionIndexer] background indexing error:", err);
