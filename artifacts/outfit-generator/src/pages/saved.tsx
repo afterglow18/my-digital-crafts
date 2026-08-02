@@ -100,7 +100,7 @@ export default function SavedPage() {
   const searchResults = useMemo(() => {
     const trimmed = query.trim();
     if (!trimmed) return null;
-    return searchItems(trimmed, allItems, outfits ?? []);
+    return searchItems(trimmed, allItems, outfits ?? [], names);
   }, [query, allItems, outfits]);
 
   // ── Outfit editors ────────────────────────────────────────────────────────────

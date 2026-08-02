@@ -38,12 +38,18 @@ function matchScore(
   return tokens.reduce((sum, tok) => sum + (lower.includes(tok) ? weight : 0), 0);
 }
 
-function scoreItem(item: ClothingItem, tokens: string[]): number {
+function scoreItem(
+  item: ClothingItem,
+  tokens: string[],
+  categoryDisplayName?: string,
+): number {
   return (
     matchScore(item.name,          tokens, 10) +
     matchScore(item.brand,         tokens,  9) +
     matchScore(item.color,         tokens,  8) +
     matchScore(item.category,      tokens,  7) +
+    // Also score the human-readable category name (e.g. "Art Supplies" for key "outfits")
+    matchScore(categoryDisplayName, tokens,  7) +
     matchScore(item.notes,         tokens,  6) +
     matchScore(item.size,          tokens,  5) +
     matchScore(item.season,        tokens,  5) +
@@ -59,13 +65,17 @@ export function searchItems(
   query: string,
   items: ClothingItem[],
   groups: SavedOutfit[],
+  categoryNames?: Record<string, string>,
 ): SearchResults {
   const tokens = tokenize(query);
   if (!tokens.length) return { items: [], groups: [] };
 
   // ── Items ─────────────────────────────────────────────────────────────────
   const scoredItems = items
-    .map((item) => ({ item, score: scoreItem(item, tokens) }))
+    .map((item) => ({
+      item,
+      score: scoreItem(item, tokens, categoryNames?.[item.category]),
+    }))
     .filter((s) => s.score > 0)
     .sort((a, b) => b.score - a.score);
 
