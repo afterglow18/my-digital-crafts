@@ -55,17 +55,16 @@ function useImageRect(ref: RefObject<HTMLDivElement>): ImgRect {
       const c = ref.current;
       if (!c) return;
       const cW = c.clientWidth, cH = c.clientHeight;
+      const iR = IMG_W / IMG_H;
       // Fill: stretch image to exactly match container — full bed visible
       setRect({ top: 0, left: 0, width: cW, height: cH, containerH: cH });
     };
     compute();
-    // ResizeObserver catches the iOS dvh/safe-area late-settle across however
-    // many frames it takes — more reliable than a fixed RAF count.
-    const ro = new ResizeObserver(compute);
-    if (ref.current) ro.observe(ref.current);
+    // Re-measure after the first frame — iOS dvh settles after initial paint.
+    const raf = requestAnimationFrame(compute);
     window.addEventListener("resize", compute);
     return () => {
-      ro.disconnect();
+      cancelAnimationFrame(raf);
       window.removeEventListener("resize", compute);
     };
   }, [ref]);
