@@ -86,18 +86,17 @@ function useImageRect(containerRef: RefObject<HTMLDivElement>): ImgRect {
       const c = containerRef.current;
       if (!c) return;
       const cW = c.clientWidth, cH = c.clientHeight;
-      const iR = IMG_W / IMG_H;
       // Fill: stretch image to exactly match container — full bed visible
       setRect({ top: 0, left: 0, width: cW, height: cH, containerH: cH, containerW: cW });
     };
     compute();
-    // Re-measure after the first frame — iOS dvh settles after initial paint,
-    // so the first clientHeight can be too large (full screen, safe-area not
-    // yet subtracted). This ensures correct sizing on first open.
-    const raf = requestAnimationFrame(compute);
+    // ResizeObserver catches the iOS dvh/safe-area late-settle across however
+    // many frames it takes — more reliable than a fixed RAF count.
+    const ro = new ResizeObserver(compute);
+    if (containerRef.current) ro.observe(containerRef.current);
     window.addEventListener("resize", compute);
     return () => {
-      cancelAnimationFrame(raf);
+      ro.disconnect();
       window.removeEventListener("resize", compute);
     };
   }, [containerRef]);
