@@ -3,20 +3,27 @@
  * Every field is optional and editable. A "Save" button appears only when
  * the form is dirty. Delete is always available.
  *
- * Also houses CleanupPhotoOverlay — the side-by-side Original | Cleaned ✨
- * comparison overlay triggered by "Clean Up Photo".
+ * Props:
+ *   showAddToLookbook — when true, shows "Add to Lookbook" instead of
+ *                       "Clean Up Photo". Pass true from search results and
+ *                       the favorites page; never from the main wardrobe.
+ *
+ * Also houses CleanupPhotoOverlay and LookbookPickerSheet.
  */
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useCategoryNames } from "@/contexts/CategoryNamesContext";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  X, Heart, Trash2, Save, ChevronDown, Sparkles, Check, Loader2,
+  X, Heart, Trash2, Save, ChevronDown, Sparkles, Check, Loader2, Bookmark,
 } from "lucide-react";
 import {
   type ClothingItem,
   type ClothingItemUpdateCategory,
   useUpdateClothingItem,
   useDeleteClothingItem,
+  useListOutfits,
+  useAddItemToOutfit,
+  useRemoveItemFromOutfit,
   getListClothingQueryKey,
   getListOutfitsQueryKey,
   getWardrobeStatsQueryKey,
@@ -25,8 +32,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { getImageUrl } from "@/lib/utils";
 import {
   removeBackground,
-  blobToDataUrl as bgBlobToDataUrl,
-  dataUrlToBlob,
 } from "@/lib/backgroundRemoval";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -104,10 +109,154 @@ function SelectField({
   );
 }
 
+// ── LookbookPickerSheet ───────────────────────────────────────────────────────
+
+interface LookbookPickerSheetProps {
+  item: ClothingItem;
+  onClose: () => void;
+}
+
+function LookbookPickerSheet({ item, onClose }: LookbookPickerSheetProps) {
+  const { data: outfits = [] } = useListOutfits();
+  const addToOutfit    = useAddItemToOutfit();
+  const removeFromOutfit = useRemoveItemFromOutfit();
+  const queryClient    = useQueryClient();
+  const [pending, setPending] = useState<number | null>(null);
+
+  const isInOutfit = (outfitId: number) =>
+    outfits.find((o) => o.id === outfitId)?.items.some((i) => i.id === item.id) ?? false;
+
+  const handleToggle = async (outfitId: number) => {
+    if (pending != null) return;
+    setPending(outfitId);
+    try {
+      if (isInOutfit(outfitId)) {
+        await removeFromOutfit.mutateAsync({ id: outfitId, itemId: item.id });
+      } else {
+        await addToOutfit.mutateAsync({ id: outfitId, data: { itemId: item.id } });
+      }
+      queryClient.invalidateQueries({ queryKey: getListOutfitsQueryKey() });
+    } finally {
+      setPending(null);
+    }
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: "100%" }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: "100%" }}
+      transition={{ type: "spring", damping: 28, stiffness: 240 }}
+      className="fixed inset-0 z-[75] flex flex-col max-w-md mx-auto bg-[#f9f4ee]"
+    >
+      {/* Header */}
+      <div
+        className="flex items-center justify-between px-4 bg-[#EDD9B4] border-b-2 border-[#8C4F48]/25 flex-shrink-0"
+        style={{ paddingTop: "max(0.75rem, env(safe-area-inset-top))", paddingBottom: "0.75rem" }}
+      >
+        <h2 className="font-display font-bold text-xl uppercase tracking-tight flex items-center gap-2 text-[#3A2210]">
+          <Bookmark className="w-5 h-5" />
+          Add to Lookbook
+        </h2>
+        <button
+          onClick={onClose}
+          className="w-9 h-9 border-2 border-[#8C4F48]/50 rounded-full flex items-center justify-center
+                     bg-[#fdf8f0] text-[#3A2210] shadow-[2px_2px_0px_0px_rgba(139,94,60,0.25)]
+                     active:translate-y-0.5 active:translate-x-0.5 active:shadow-none transition-all"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      </div>
+
+      {/* List */}
+      <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3">
+        {outfits.length === 0 ? (
+          <div className="flex-1 flex flex-col items-center justify-center text-center py-16">
+            <p className="font-display font-bold text-sm uppercase tracking-tight text-[#6B3838]/50">
+              No collections saved yet
+            </p>
+            <p className="text-xs text-[#6B3838]/35 mt-1">
+              Save a collection from the Generate page first.
+            </p>
+          </div>
+        ) : (
+          outfits.map((outfit) => {
+            const inIt  = isInOutfit(outfit.id);
+            const thumbs = outfit.items.slice(0, 3);
+            const busy  = pending === outfit.id;
+
+            return (
+              <button
+                key={outfit.id}
+                onClick={() => handleToggle(outfit.id)}
+                disabled={busy}
+                className="flex items-center gap-3 bg-white border-2 border-black rounded-xl px-3 py-3
+                           shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]
+                           active:shadow-none active:translate-x-0.5 active:translate-y-0.5
+                           transition-all text-left disabled:opacity-60"
+              >
+                {/* 3-thumbnail row */}
+                <div className="flex gap-1 shrink-0">
+                  {[0, 1, 2].map((i) => {
+                    const it = thumbs[i];
+                    return (
+                      <div
+                        key={i}
+                        className="w-12 h-12 border border-black/20 rounded-lg overflow-hidden"
+                        style={{ background: "#F5EDD8" }}
+                      >
+                        {it?.imageObjectPath ? (
+                          <img
+                            src={getImageUrl(it.imageObjectPath)!}
+                            alt={it.name}
+                            className="w-full h-full object-contain"
+                          />
+                        ) : (
+                          <div className="w-full h-full" />
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Name */}
+                <p className="flex-1 font-bold text-sm truncate text-[#3A2210]">
+                  {outfit.name}
+                </p>
+
+                {/* Checkmark */}
+                {inIt && (
+                  <Check className="w-5 h-5 shrink-0 text-[#8C4F48]" strokeWidth={3} />
+                )}
+              </button>
+            );
+          })
+        )}
+      </div>
+
+      {/* Footer */}
+      <div
+        className="px-4 py-4 bg-[#EDD9B4] border-t-2 border-[#8C4F48]/25 flex-shrink-0"
+        style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}
+      >
+        <button
+          onClick={onClose}
+          className="w-full py-3 rounded-xl border-2 border-[#8C4F48]
+                     font-display font-bold text-sm uppercase tracking-tight
+                     bg-gradient-to-b from-[#A06058] to-[#8C4F48] text-[#fdf8f0]
+                     shadow-[0_4px_12px_rgba(139,94,60,0.4)]
+                     active:opacity-90 transition-all"
+        >
+          Done
+        </button>
+      </div>
+    </motion.div>
+  );
+}
+
 // ── CleanupPhotoOverlay ───────────────────────────────────────────────────────
 
 interface CleanupPhotoOverlayProps {
-  /** Raw imageObjectPath value from the DB (data URL or object URL). */
   sourceImageUrl: string;
   onConfirm: (chosenUrl: string) => void;
   onClose: () => void;
@@ -118,7 +267,6 @@ function CleanupPhotoOverlay({ sourceImageUrl, onConfirm, onClose }: CleanupPhot
   const [processing,  setProcessing]  = useState(true);
   const [failed,      setFailed]      = useState(false);
   const [selected,    setSelected]    = useState<"original" | "cleaned">("original");
-  // Guard — if user closes mid-run, discard the result.
   const activeRef = useRef(true);
 
   useEffect(() => {
@@ -130,7 +278,6 @@ function CleanupPhotoOverlay({ sourceImageUrl, onConfirm, onClose }: CleanupPhot
 
     (async () => {
       try {
-        // sourceImageUrl is a data URL stored in IndexedDB — fetch() handles it fine.
         const resultUrl = await removeBackground(sourceImageUrl);
         if (!activeRef.current) return;
         setCleanedUrl(resultUrl);
@@ -189,8 +336,6 @@ function CleanupPhotoOverlay({ sourceImageUrl, onConfirm, onClose }: CleanupPhot
 
       {/* Body */}
       <div className="flex-1 flex flex-col gap-4 p-4 overflow-y-auto">
-
-        {/* Hint */}
         <p className="text-center font-display font-bold text-[11px] uppercase tracking-widest text-[#6B3838]/50">
           {processing
             ? "Removing background on device…"
@@ -199,9 +344,7 @@ function CleanupPhotoOverlay({ sourceImageUrl, onConfirm, onClose }: CleanupPhot
             : "Tap to choose your version"}
         </p>
 
-        {/* Side-by-side cards */}
         <div className="flex gap-3">
-
           {/* Original */}
           <button
             onClick={() => setSelected("original")}
@@ -300,7 +443,6 @@ function CleanupPhotoOverlay({ sourceImageUrl, onConfirm, onClose }: CleanupPhot
               </p>
             </div>
           </button>
-
         </div>
       </div>
 
@@ -338,6 +480,8 @@ interface ItemDetailsSheetProps {
   item: ClothingItem | null;
   onClose: () => void;
   onDeleted?: () => void;
+  /** When true: show "Add to Lookbook" button. When false/omitted: show "Clean Up Photo". */
+  showAddToLookbook?: boolean;
 }
 
 interface FormState {
@@ -386,49 +530,29 @@ function isDirty(form: FormState, item: ClothingItem): boolean {
   );
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-function todayLocalDate(): string {
-  // Returns YYYY-MM-DD in the user's local timezone
-  return new Date().toLocaleDateString("en-CA");
-}
-
-function fmtWorkedDate(dateStr: string): string {
-  // "YYYY-MM-DD" → "M/D/YY"
-  const [y, m, d] = dateStr.split("-").map(Number);
-  return `${m}/${d}/${String(y).slice(2)}`;
-}
-
-export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetProps) {
+export function ItemDetailsSheet({
+  item,
+  onClose,
+  onDeleted,
+  showAddToLookbook = false,
+}: ItemDetailsSheetProps) {
   const { names: categoryNames } = useCategoryNames();
   const [form,              setForm]              = useState<FormState | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showCleanup,       setShowCleanup]       = useState(false);
+  const [showLookbookPicker, setShowLookbookPicker] = useState(false);
 
-  /**
-   * Optimistic image URL — written immediately when the user confirms a cleaned
-   * version, before the DB write completes. Falls back to item.imageObjectPath.
-   */
   const [localImageUrl, setLocalImageUrl] = useState<string | null>(null);
-
-  // ── Craft-tracking state (projects only) ────────────────────────────────────
-  const [localTimesWorn,      setLocalTimesWorn]      = useState(item?.timesWorn ?? 0);
-  const [localLastWorkedDate, setLocalLastWorkedDate] = useState<string | null>(item?.lastWorkedDate ?? null);
-  const [prevLastWorkedDate,  setPrevLastWorkedDate]  = useState<string | null | undefined>(undefined);
 
   const updateItem  = useUpdateClothingItem();
   const deleteItem  = useDeleteClothingItem();
   const queryClient = useQueryClient();
 
-  // Reset form and cleanup state whenever item changes
   useEffect(() => {
-    if (item) {
-      setForm(toForm(item));
-      setLocalTimesWorn(item.timesWorn ?? 0);
-      setLocalLastWorkedDate(item.lastWorkedDate ?? null);
-      setPrevLastWorkedDate(undefined);
-    }
+    if (item) setForm(toForm(item));
     setShowDeleteConfirm(false);
     setShowCleanup(false);
+    setShowLookbookPicker(false);
     setLocalImageUrl(null);
   }, [item?.id]);
 
@@ -438,41 +562,10 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
     queryClient.invalidateQueries({ queryKey: getWardrobeStatsQueryKey() });
   }, [queryClient]);
 
-  // ── Craft-tracking helpers ───────────────────────────────────────────────────
-  const isProject    = item?.category === "toiletries";
-  const todayStr     = todayLocalDate();
-  const isLoggedToday = localLastWorkedDate === todayStr;
-
-  const handleLogToday = useCallback(() => {
-    const nextCount = localTimesWorn + 1;
-    setPrevLastWorkedDate(localLastWorkedDate);
-    setLocalTimesWorn(nextCount);
-    setLocalLastWorkedDate(todayStr);
-    updateItem.mutate(
-      { id: item!.id, data: { timesWorn: nextCount, lastWorkedDate: todayStr } },
-      { onSuccess: invalidateAll },
-    );
-  }, [localTimesWorn, localLastWorkedDate, todayStr, item, updateItem, invalidateAll]);
-
-  const handleUndoLog = useCallback(() => {
-    const nextCount = Math.max(0, localTimesWorn - 1);
-    const restoredDate = prevLastWorkedDate ?? null;
-    setLocalTimesWorn(nextCount);
-    setLocalLastWorkedDate(restoredDate);
-    setPrevLastWorkedDate(undefined);
-    updateItem.mutate(
-      { id: item!.id, data: { timesWorn: nextCount, lastWorkedDate: restoredDate } },
-      { onSuccess: invalidateAll },
-    );
-  }, [localTimesWorn, prevLastWorkedDate, item, updateItem, invalidateAll]);
-
   if (!item || !form) return null;
 
   const dirty = isDirty(form, item);
-
-  // Displayed image: local optimistic value wins when set, otherwise DB value.
   const displayedImageUrl = localImageUrl ?? item.imageObjectPath;
-
   const patch = (key: keyof FormState) => (value: string | boolean) =>
     setForm((prev) => prev ? { ...prev, [key]: value } : prev);
 
@@ -481,8 +574,6 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
       {
         id: item.id,
         data: {
-          // Always send every editable field so the backend can clear it when empty.
-          // Backend converts "" → null in DB.
           name:          form.name.trim() || item.name,
           brand:         form.brand.trim(),
           color:         form.color.trim(),
@@ -518,17 +609,9 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
     );
   };
 
-  /**
-   * Called when the user confirms a choice in the cleanup overlay.
-   * 1. Update the displayed photo immediately (optimistic).
-   * 2. Close the overlay.
-   * 3. Fire the DB write in the background — no await, no spinner.
-   */
   const handleCleanupConfirm = (chosenUrl: string) => {
-    // Optimistic: show chosen photo NOW
     setLocalImageUrl(chosenUrl);
     setShowCleanup(false);
-    // Background DB write
     updateItem.mutate(
       { id: item.id, data: { imageObjectPath: chosenUrl } },
       {
@@ -540,6 +623,11 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
       }
     );
   };
+
+  // Determine whether to show the action button row
+  const showActionButton =
+    showAddToLookbook ||
+    (!!displayedImageUrl && !displayedImageUrl.startsWith("data:image/png"));
 
   return (
     <>
@@ -558,7 +646,7 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
             Item Details
           </h2>
           <div className="flex items-center gap-2">
-            {/* Favourite toggle — saves instantly */}
+            {/* Favourite toggle */}
             <button
               onClick={() => {
                 const next = !form.isFavorite;
@@ -611,27 +699,12 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
           </div>
         )}
 
-        {/* ── Button row — sits below photo (or at top if no photo) ── */}
-        {(isProject || (displayedImageUrl && !displayedImageUrl.startsWith("data:image/png"))) && (
+        {/* ── Action button row ── */}
+        {showActionButton && (
           <div className="flex gap-2 px-4 pt-3">
-            {isProject && (
+            {showAddToLookbook ? (
               <button
-                onClick={isLoggedToday ? handleUndoLog : handleLogToday}
-                className={`flex-1 flex items-center justify-center gap-1.5
-                           px-3 py-2 rounded-lg border-2 font-display font-bold text-[11px]
-                           uppercase tracking-widest transition-all
-                           active:translate-x-0.5 active:translate-y-0.5 active:shadow-none
-                           ${isLoggedToday
-                             ? "border-[#8C4F48] bg-[#8C4F48] text-[#F5F0E8] shadow-[2px_2px_0px_0px_rgba(139,94,60,0.3)]"
-                             : "border-[#8C4F48]/50 bg-[#EDD9B4] text-[#3A2210] shadow-[2px_2px_0px_0px_rgba(139,94,60,0.3)]"
-                           }`}
-              >
-                {isLoggedToday ? "Logged ✓ · Undo" : "Today's Project"}
-              </button>
-            )}
-            {displayedImageUrl && !displayedImageUrl.startsWith("data:image/png") && (
-              <button
-                onClick={() => setShowCleanup(true)}
+                onClick={() => setShowLookbookPicker(true)}
                 className="flex-1 flex items-center justify-center gap-1.5
                            px-3 py-2 rounded-lg
                            border-2 border-[#8C4F48]/50 bg-[#EDD9B4] text-[#3A2210]
@@ -639,9 +712,24 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
                            shadow-[2px_2px_0px_0px_rgba(139,94,60,0.3)]
                            active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all"
               >
-                <Sparkles className="w-3.5 h-3.5" />
-                Clean Up Photo
+                <Bookmark className="w-3.5 h-3.5" />
+                Add to Lookbook
               </button>
+            ) : (
+              displayedImageUrl && !displayedImageUrl.startsWith("data:image/png") && (
+                <button
+                  onClick={() => setShowCleanup(true)}
+                  className="flex-1 flex items-center justify-center gap-1.5
+                             px-3 py-2 rounded-lg
+                             border-2 border-[#8C4F48]/50 bg-[#EDD9B4] text-[#3A2210]
+                             font-display font-bold text-[11px] uppercase tracking-widest
+                             shadow-[2px_2px_0px_0px_rgba(139,94,60,0.3)]
+                             active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  Clean Up Photo
+                </button>
+              )
             )}
           </div>
         )}
@@ -649,36 +737,30 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
         {/* ── Form ── */}
         <div className="flex-1 px-4 py-5 flex flex-col gap-4">
 
-          {/* Name */}
           <Field
             label="Item Name"
             value={form.name}
             onChange={patch("name") as (v: string) => void}
-            placeholder="e.g. White Linen Shirt"
+            placeholder="e.g. Watercolour Set"
           />
 
-          {/* Brand + Color */}
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Brand"  value={form.brand} onChange={patch("brand") as (v: string) => void} placeholder="Nike, Zara…" />
-            <Field label="Color"  value={form.color} onChange={patch("color") as (v: string) => void} placeholder="Navy Blue" />
+            <Field label="Brand"  value={form.brand}  onChange={patch("brand")  as (v: string) => void} placeholder="Brand…" />
+            <Field label="Color"  value={form.color}  onChange={patch("color")  as (v: string) => void} placeholder="Navy Blue" />
           </div>
 
-          {/* Size */}
-          <Field label="Size / Volume" value={form.size} onChange={patch("size") as (v: string) => void} placeholder="30ml, 50ml, Full Size…" />
+          <Field label="Size / Volume" value={form.size} onChange={patch("size") as (v: string) => void} placeholder="30ml, Full Size…" />
 
-          {/* Season + Occasion */}
           <div className="grid grid-cols-2 gap-3">
-            <SelectField label="Season"   value={form.season}   onChange={patch("season") as (v: string) => void}   options={SEASON_OPTIONS} />
+            <SelectField label="Season"   value={form.season}   onChange={patch("season")   as (v: string) => void} options={SEASON_OPTIONS} />
             <SelectField label="Occasion" value={form.occasion} onChange={patch("occasion") as (v: string) => void} options={OCCASION_OPTIONS} />
           </div>
 
-          {/* Price + Date */}
           <div className="grid grid-cols-2 gap-3">
             <Field label="Purchase Price" value={form.purchasePrice} onChange={patch("purchasePrice") as (v: string) => void} placeholder="$49.99" />
-            <Field label="Date"  value={form.purchaseDate}  onChange={patch("purchaseDate") as (v: string) => void}  type="date" />
+            <Field label="Date"           value={form.purchaseDate}  onChange={patch("purchaseDate")  as (v: string) => void} type="date" />
           </div>
 
-          {/* Notes */}
           <div className="flex flex-col gap-1">
             <label className="text-[10px] font-bold uppercase tracking-widest text-[#6B3838]/55">
               Notes
@@ -694,59 +776,19 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
             />
           </div>
 
-          {/* Category (editable) + Times Worked On / Times Worn */}
-          <div className="grid grid-cols-2 gap-3">
-            <SelectField
-              label="Category"
-              value={form.category}
-              onChange={patch("category") as (v: string) => void}
-              options={CATEGORY_OPTIONS}
-              displayMap={categoryNames}
-            />
-            {isProject ? (
-              <div className="flex flex-col gap-1">
-                <span className="text-[10px] font-bold uppercase tracking-widest text-[#6B3838]/55">Times Worked On</span>
-                <input
-                  type="number"
-                  min="0"
-                  value={localTimesWorn}
-                  onChange={e => {
-                    const n = Math.max(0, parseInt(e.target.value) || 0);
-                    setLocalTimesWorn(n);
-                  }}
-                  onBlur={e => {
-                    const n = Math.max(0, parseInt(e.target.value) || 0);
-                    setLocalTimesWorn(n);
-                    updateItem.mutate(
-                      { id: item.id, data: { timesWorn: n } },
-                      { onSuccess: invalidateAll },
-                    );
-                  }}
-                  className="border-2 border-[#8C4F48]/30 rounded-lg px-3 py-2 text-sm font-medium
-                             text-[#3A2210] bg-[#fdf8f0] focus:outline-none focus:ring-2 focus:ring-[#8C4F48]/20"
-                />
-                {localLastWorkedDate && (
-                  <span className="text-[10px] text-[#6B3838]/55 mt-0.5">
-                    Last worked on: {fmtWorkedDate(localLastWorkedDate)}
-                  </span>
-                )}
-              </div>
-            ) : (
-              <div className="flex flex-col gap-1 opacity-50 pointer-events-none">
-                <span className="text-[10px] font-bold uppercase tracking-widest text-[#6B3838]/55">Times Worn</span>
-                <div className="border-2 border-[#8C4F48]/20 rounded-lg px-3 py-2 text-sm font-medium bg-[#fdf8f0]/50 text-[#3A2210]">
-                  {item.timesWorn ?? 0}
-                </div>
-              </div>
-            )}
-          </div>
+          <SelectField
+            label="Category"
+            value={form.category}
+            onChange={patch("category") as (v: string) => void}
+            options={CATEGORY_OPTIONS}
+            displayMap={categoryNames}
+          />
 
         </div>
 
         {/* ── Footer actions ── */}
         <div className="sticky bottom-0 px-4 py-4 bg-[#EDD9B4] border-t-2 border-[#8C4F48]/25 flex-shrink-0 flex flex-col gap-2">
 
-          {/* Save (only when dirty) */}
           <AnimatePresence>
             {dirty && (
               <motion.button
@@ -768,7 +810,6 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
             )}
           </AnimatePresence>
 
-          {/* Delete */}
           {!showDeleteConfirm ? (
             <button
               onClick={() => setShowDeleteConfirm(true)}
@@ -805,13 +846,23 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
         </div>
       </motion.div>
 
-      {/* ── Cleanup overlay (sits above ItemDetailsSheet at z-[75]) ── */}
+      {/* ── Cleanup overlay ── */}
       <AnimatePresence>
         {showCleanup && displayedImageUrl && (
           <CleanupPhotoOverlay
             sourceImageUrl={displayedImageUrl}
             onConfirm={handleCleanupConfirm}
             onClose={() => setShowCleanup(false)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* ── Lookbook picker ── */}
+      <AnimatePresence>
+        {showLookbookPicker && (
+          <LookbookPickerSheet
+            item={item}
+            onClose={() => setShowLookbookPicker(false)}
           />
         )}
       </AnimatePresence>

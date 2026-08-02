@@ -9,23 +9,46 @@ import { getDB, type ClothingItem, type SavedOutfit, type StoredClothingItem, ty
 
 const CATEGORIES = ["outfits", "beauty", "toiletries", "essentials"] as const;
 
+// ── Normalise raw DB records ───────────────────────────────────────────────────
+// Fills in v2 vision fields that old records won't have, and ensures every
+// optional field is a defined value.
+
+function normalizeItem(raw: StoredClothingItem): ClothingItem {
+  return {
+    ...raw,
+    id:             raw.id as number,
+    lastWorkedDate: raw.lastWorkedDate ?? null,
+    color:          raw.color    ?? null,
+    brand:          raw.brand    ?? null,
+    size:           raw.size     ?? null,
+    season:         raw.season   ?? null,
+    occasion:       raw.occasion ?? null,
+    purchasePrice:  raw.purchasePrice ?? null,
+    purchaseDate:   raw.purchaseDate  ?? null,
+    notes:          raw.notes    ?? null,
+    visionLabels:   Array.isArray(raw.visionLabels)           ? raw.visionLabels  : [],
+    visionText:     Array.isArray(raw.visionText)             ? raw.visionText    : [],
+    visionVersion:  typeof raw.visionVersion === "number"     ? raw.visionVersion : 0,
+  };
+}
+
 // ── Clothing items ────────────────────────────────────────────────────────────
 
 export async function listClothing(category?: string): Promise<ClothingItem[]> {
-  const db   = await getDB();
-  const all  = category
+  const db  = await getDB();
+  const all = category
     ? await db.getAllFromIndex("clothing_items", "by_category", category)
     : await db.getAll("clothing_items");
 
-  return (all as ClothingItem[]).sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-  );
+  return (all as StoredClothingItem[])
+    .map(normalizeItem)
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 }
 
 export async function getClothingItem(id: number): Promise<ClothingItem | null> {
   const db   = await getDB();
-  const item = await db.get("clothing_items", id);
-  return (item as ClothingItem) ?? null;
+  const item = await db.get("clothing_items", id) as StoredClothingItem | undefined;
+  return item ? normalizeItem(item) : null;
 }
 
 export async function createClothingItem(data: {
@@ -52,19 +75,22 @@ export async function createClothingItem(data: {
     timesWorn:       0,
     lastWorkedDate:  null,
     color:           data.color ?? null,
-    brand:          data.brand ?? null,
-    size:           data.size  ?? null,
-    season:         data.season ?? null,
-    occasion:       data.occasion ?? null,
-    purchasePrice:  data.purchasePrice ?? null,
-    purchaseDate:   data.purchaseDate  ?? null,
-    notes:          data.notes ?? null,
-    createdAt:      now,
-    updatedAt:      now,
+    brand:           data.brand ?? null,
+    size:            data.size  ?? null,
+    season:          data.season ?? null,
+    occasion:        data.occasion ?? null,
+    purchasePrice:   data.purchasePrice ?? null,
+    purchaseDate:    data.purchaseDate  ?? null,
+    notes:           data.notes ?? null,
+    visionLabels:    [],
+    visionText:      [],
+    visionVersion:   0,
+    createdAt:       now,
+    updatedAt:       now,
   };
 
   const id = await db.add("clothing_items", record);
-  return { ...record, id: id as number } as ClothingItem;
+  return normalizeItem({ ...record, id: id as number });
 }
 
 export async function updateClothingItem(
@@ -83,7 +109,7 @@ export async function updateClothingItem(
   };
 
   await db.put("clothing_items", updated);
-  return updated as ClothingItem;
+  return normalizeItem(updated);
 }
 
 export async function deleteClothingItem(id: number): Promise<void> {
@@ -103,7 +129,7 @@ export async function deleteClothingItem(id: number): Promise<void> {
 
 export async function getWardrobeStats() {
   const db      = await getDB();
-  const all     = (await db.getAll("clothing_items")) as ClothingItem[];
+  const all     = (await db.getAll("clothing_items")) as StoredClothingItem[];
   const outfits = (await db.getAll("saved_outfits")) as StoredOutfit[];
 
   const byCategory = CATEGORIES.map((cat) => ({
@@ -122,9 +148,9 @@ export async function getWardrobeStats() {
 // ── Outfit generation (pure Math.random — no backend needed) ──────────────────
 
 export async function generateOutfit(excludeCategories: string[] = []): Promise<ClothingItem[]> {
-  const db          = await getDB();
-  const all         = (await db.getAll("clothing_items")) as ClothingItem[];
-  const active      = CATEGORIES.filter((c) => !excludeCategories.includes(c));
+  const db     = await getDB();
+  const all    = (await db.getAll("clothing_items") as StoredClothingItem[]).map(normalizeItem);
+  const active = CATEGORIES.filter((c) => !excludeCategories.includes(c));
   const picked: ClothingItem[] = [];
 
   for (const cat of active) {
@@ -148,7 +174,7 @@ async function hydrateOutfit(outfit: StoredOutfit & { id: number }): Promise<Sav
   const links = (await db.getAllFromIndex("outfit_items", "by_outfit", outfit.id)) as StoredOutfitItem[];
 
   const items = await Promise.all(
-    links.map((l) => db.get("clothing_items", l.clothingItemId))
+    links.map((l) => db.get("clothing_items", l.clothingItemId) as Promise<StoredClothingItem | undefined>)
   );
 
   return {
@@ -156,7 +182,7 @@ async function hydrateOutfit(outfit: StoredOutfit & { id: number }): Promise<Sav
     name:      outfit.name,
     notes:     outfit.notes ?? null,
     createdAt: outfit.createdAt,
-    items:     items.filter(Boolean) as ClothingItem[],
+    items:     items.filter(Boolean).map((i) => normalizeItem(i!)),
   };
 }
 

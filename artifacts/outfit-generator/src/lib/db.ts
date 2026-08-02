@@ -10,12 +10,16 @@
  *   saved_outfits   — named outfit collections
  *   outfit_items    — junction: outfit ↔ clothing item
  *   settings        — key/value store for app preferences
+ *
+ * Schema v2 (non-breaking):
+ *   clothing_items gains visionLabels / visionText / visionVersion fields.
+ *   IDB object stores are schema-less; normalizeItem() fills defaults for old records.
  */
 
 import { openDB, type IDBPDatabase } from "idb";
 
 export const DB_NAME    = "my-digital-suitcase";
-export const DB_VERSION = 1;
+export const DB_VERSION = 2;
 
 // ── Stored types (IndexedDB records) ─────────────────────────────────────────
 
@@ -35,6 +39,10 @@ export interface StoredClothingItem {
   purchasePrice?:   string | null;
   purchaseDate?:    string | null;
   notes?:           string | null;
+  // ── v2: vision / photo-search fields ──────────────────────────────────────
+  visionLabels?:    string[];        // colour names (web) or VNClassify labels (iOS)
+  visionText?:      string[];        // text detected in photo (iOS Vision)
+  visionVersion?:   number;          // 0=unanalysed,1=iOS,4=web-ok,5=web-no-labels
   createdAt:        string;
   updatedAt:        string;
 }
@@ -59,8 +67,13 @@ export interface StoredSetting {
 
 // ── Public types (consumed by hooks and pages) ────────────────────────────────
 
+/** All optional fields are normalised to non-undefined values by normalizeItem(). */
 export interface ClothingItem extends Required<StoredClothingItem> {
   id: number;
+  // Override vision fields to be always-defined arrays / number:
+  visionLabels:  string[];
+  visionText:    string[];
+  visionVersion: number;
 }
 
 export interface SavedOutfit {
@@ -79,39 +92,34 @@ export async function getDB(): Promise<IDBPDatabase> {
   if (_db) return _db;
 
   _db = await openDB(DB_NAME, DB_VERSION, {
-    upgrade(db) {
-      // clothing_items
-      if (!db.objectStoreNames.contains("clothing_items")) {
-        const store = db.createObjectStore("clothing_items", {
+    upgrade(db, oldVersion) {
+      // ── v1: initial schema ─────────────────────────────────────────────────
+      if (oldVersion < 1) {
+        const itemStore = db.createObjectStore("clothing_items", {
           keyPath:       "id",
           autoIncrement: true,
         });
-        store.createIndex("by_category", "category");
-        store.createIndex("by_favorite", "isFavorite");
-      }
+        itemStore.createIndex("by_category", "category");
+        itemStore.createIndex("by_favorite", "isFavorite");
 
-      // saved_outfits
-      if (!db.objectStoreNames.contains("saved_outfits")) {
         db.createObjectStore("saved_outfits", {
           keyPath:       "id",
           autoIncrement: true,
         });
-      }
 
-      // outfit_items
-      if (!db.objectStoreNames.contains("outfit_items")) {
-        const store = db.createObjectStore("outfit_items", {
+        const oiStore = db.createObjectStore("outfit_items", {
           keyPath:       "id",
           autoIncrement: true,
         });
-        store.createIndex("by_outfit", "outfitId");
-        store.createIndex("by_item",   "clothingItemId");
-      }
+        oiStore.createIndex("by_outfit", "outfitId");
+        oiStore.createIndex("by_item",   "clothingItemId");
 
-      // settings
-      if (!db.objectStoreNames.contains("settings")) {
         db.createObjectStore("settings", { keyPath: "key" });
       }
+
+      // ── v2: vision fields added to clothing_items ─────────────────────────
+      // IDB object stores are schema-less — no structural changes needed here.
+      // Existing records gain defaults via normalizeItem() in localDB.ts.
     },
 
     blocked() {

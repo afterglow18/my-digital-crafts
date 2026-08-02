@@ -1,8 +1,8 @@
 /**
- * FavoritesPage ("Totally 💛") — every clothing item the user has hearted.
+ * FavoritesPage ("My Faves") — every clothing item the user has hearted.
  * Displays as a 4-column grid with uniform square cards.
  * Items can be dragged to reorder; order is persisted in localStorage.
- * Tap an item to open the full details sheet.
+ * Tap an item to open the full details sheet with "Add to Lookbook" enabled.
  */
 import React, { useState, useEffect } from "react";
 import { AnimatePresence } from "framer-motion";
@@ -105,17 +105,12 @@ function SortableTile({
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <span className="text-2xl opacity-30">
-              {item.category === "shoes" ? "👟"
-                : item.category === "dresses" ? "👗"
-                : item.category === "accessories" ? "👜"
-                : "👚"}
-            </span>
+            <span className="text-2xl opacity-30">🧵</span>
           </div>
         )}
       </button>
 
-      {/* Category label */}
+      {/* Item name */}
       <p className="mt-1 text-[9px] font-bold uppercase text-center text-muted-foreground tracking-wide truncate">
         {item.name || CATEGORY_LABELS[item.category ?? ""] || "—"}
       </p>
@@ -212,13 +207,14 @@ export default function FavoritesPage() {
         </div>
       )}
 
-      {/* Item details sheet */}
+      {/* Item details sheet — showAddToLookbook so user can add to collections */}
       <AnimatePresence>
         {detailsItem && (
           <ItemDetailsSheet
             key={detailsItem.id}
             item={detailsItem}
             onClose={handleDetailsClose}
+            showAddToLookbook
           />
         )}
       </AnimatePresence>
