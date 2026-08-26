@@ -24,9 +24,9 @@ const config: CapacitorConfig = {
         'My Digital Crafts reads your photo library so you can select clothing photos to add to your wardrobe.',
       NSPhotoLibraryAddUsageDescription:
         'My Digital Crafts saves photos you take with the camera to your photo library.',
-      // Universal (iPhone + iPad) support. Without family 2, the app only runs
-      // on iPhone and cannot be submitted for iPad or shown as "Designed for iPad".
-      UIDeviceFamily: [1, 2],
+      // iPhone-only support. Family 1 excludes iPad and prevents the app from
+      // being offered as a "Designed for iPad" app.
+      UIDeviceFamily: [1],
     },
   },
 

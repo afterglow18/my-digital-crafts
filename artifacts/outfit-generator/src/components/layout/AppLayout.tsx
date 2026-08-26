@@ -41,10 +41,10 @@ export function AppLayout({ children }: AppLayoutProps) {
   ];
 
   return (
-    // On phone/tablet (< lg): full-screen, no chrome.
-    // On desktop (lg+): centered phone frame with grey backdrop.
+    // The app is designed for iPhone; the desktop preview keeps a centered
+    // phone frame so the same layout is easy to inspect in a browser.
     <div className="min-h-[100dvh] w-full bg-background lg:bg-[#f8f9fa] flex justify-center lg:py-8 lg:px-4">
-      {/* Full-width on phone & iPad; phone frame only on desktop */}
+      {/* Full-width on iPhone; phone frame only in the desktop preview */}
       <div className="w-full lg:max-w-md bg-background h-[100dvh] lg:min-h-[850px] lg:h-[850px] lg:border-[6px] lg:border-black lg:rounded-[3rem] lg:shadow-2xl relative overflow-hidden flex flex-col">
 
         {/* Terracotta status-bar strip — covers the top safe area on iPhone */}
